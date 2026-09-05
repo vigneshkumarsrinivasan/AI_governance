@@ -1,0 +1,488 @@
+[
+  {
+    "id": "UC-AI-GOV-001",
+    "code": "UC-AI-GOV-001",
+    "title": "Enterprise AI Governance Policy and Ethical Principles",
+    "domain": "AI Governance",
+    "objective": "Establish, publish, and maintain an approved enterprise policy defining principles, ethical standards, risk appetite, and legal boundaries for all AI systems.",
+    "description": "The organization must define an enterprise-wide AI Governance Policy covering acceptable use, ethical principles, regulatory alignment, and designated roles.",
+    "control_type": "Preventive",
+    "implementation_type": "Manual",
+    "control_frequency": "Annual",
+    "risk_addressed": "Uncontrolled AI adoption, legal non-compliance, reputational harm",
+    "implementation_guidance": "Create and publish an executive-approved AI Policy. Review annually or upon significant regulatory change.",
+    "expected_evidence": [
+      "Approved AI Governance Policy",
+      "Annual Board/Executive Review Minutes"
+    ],
+    "test_procedure": "Verify policy is formally approved by executive management, version-controlled, and accessible to all staff."
+  },
+  {
+    "id": "UC-AI-GOV-002",
+    "code": "UC-AI-GOV-002",
+    "title": "AI RACI and Oversight Roles Assignment",
+    "domain": "Accountability",
+    "objective": "Assign explicit roles, responsibilities, and accountability for AI system design, development, procurement, deployment, and risk oversight.",
+    "description": "Every AI asset must have a designated Business Owner, Technical Lead, Risk/Compliance Reviewer, and operational approval authority.",
+    "control_type": "Preventive",
+    "implementation_type": "Manual",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Lack of accountability, unmonitored deployments",
+    "implementation_guidance": "Maintain a RACI matrix mapped directly to the AI System Inventory.",
+    "expected_evidence": [
+      "AI Governance RACI Matrix",
+      "Designated AI Owner Registry"
+    ],
+    "test_procedure": "Inspect AI registry to confirm 100% of registered AI systems have active assigned owners."
+  },
+  {
+    "id": "UC-AI-INV-001",
+    "code": "UC-AI-INV-001",
+    "title": "Centralized AI System Registry and Architecture Inventory",
+    "domain": "AI Inventory",
+    "objective": "Maintain an up-to-date, comprehensive inventory of all AI systems, foundation models, agents, datasets, and third-party AI APIs in use.",
+    "description": "All AI applications must be registered with business purpose, lifecycle status, deployment environment, data sources, and risk classification.",
+    "control_type": "Detective",
+    "implementation_type": "Semi-automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Shadow AI, uninventoried high-risk systems, unknown third-party dependencies",
+    "implementation_guidance": "Enforce mandatory registration prior to granting production cloud or API access.",
+    "expected_evidence": [
+      "Central AI System Registry",
+      "Automated Discovery Scan Logs"
+    ],
+    "test_procedure": "Sample production workloads and reconcile against active entries in the AI registry."
+  },
+  {
+    "id": "UC-AI-INV-002",
+    "code": "UC-AI-INV-002",
+    "title": "Prohibited AI Practices Screening Gate",
+    "domain": "AI Governance",
+    "objective": "Screen all proposed AI use cases against unacceptable and prohibited practice criteria prior to development or procurement.",
+    "description": "Mandatory checkpoint evaluating proposed AI systems against EU AI Act Article 5 prohibitions and corporate ethical redlines.",
+    "control_type": "Preventive",
+    "implementation_type": "Manual",
+    "control_frequency": "Per Project Intake",
+    "risk_addressed": "Deployment of illegal, unconstitutional, or socially harmful AI systems",
+    "implementation_guidance": "Integrate intake questionnaire with automated screening logic for biometric categorization, social scoring, and subliminal manipulation.",
+    "expected_evidence": [
+      "Completed Intake Questionnaire",
+      "Legal Screening Signoff"
+    ],
+    "test_procedure": "Verify that zero systems classified as prohibited have been granted production approval."
+  },
+  {
+    "id": "UC-AI-RSK-001",
+    "code": "UC-AI-RSK-001",
+    "title": "Continuous AI Lifecycle Risk Assessment",
+    "domain": "Risk Management",
+    "objective": "Conduct, document, and maintain systematic risk assessments throughout the AI lifecycle, evaluating inherent and residual risk.",
+    "description": "Evaluate safety, security, privacy, fairness, legal, and operational risks before release and upon material changes.",
+    "control_type": "Preventive",
+    "implementation_type": "Semi-automated",
+    "control_frequency": "Quarterly / Pre-Deployment",
+    "risk_addressed": "Unmitigated model risks, compliance violations, algorithmic failures",
+    "implementation_guidance": "Score inherent likelihood and impact, map mitigating controls, and track residual risks in the central register.",
+    "expected_evidence": [
+      "AI System Risk Assessment Report",
+      "Updated Residual Risk Register"
+    ],
+    "test_procedure": "Confirm risk assessment exists and is reviewed within the last 12 months for every active system."
+  },
+  {
+    "id": "UC-AI-SEC-001",
+    "code": "UC-AI-SEC-001",
+    "title": "Prompt Injection Defense and Context Demarcation",
+    "domain": "Prompt Security",
+    "objective": "Defend AI applications against direct jailbreaks and indirect prompt injection attacks originating from untrusted input or data stores.",
+    "description": "Deploy input sanitization, delimiter isolation, semantic classifiers, and output guardrails to block malicious instructions.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Adversarial jailbreaks, data exfiltration, system prompt extraction",
+    "implementation_guidance": "Deploy prompt firewall guardrails (e.g. Llama Guard) and isolate system prompts from user query inputs.",
+    "expected_evidence": [
+      "Prompt Guardrail Configuration",
+      "Prompt Injection Penetration Test Results"
+    ],
+    "test_procedure": "Execute automated adversarial prompt injection test suite against public endpoints."
+  },
+  {
+    "id": "UC-AI-SEC-002",
+    "code": "UC-AI-SEC-002",
+    "title": "Model and Training Data Poisoning Protection",
+    "domain": "Model Security",
+    "objective": "Ensure the integrity, authenticity, and provenance of training datasets, fine-tuning samples, and pre-trained model weights.",
+    "description": "Cryptographically sign and hash model artifacts, verify data sources, and scan datasets for anomalous or poisoned samples.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Per Training / Build",
+    "risk_addressed": "Backdoored models, poisoned fine-tuning corpora, corrupted embeddings",
+    "implementation_guidance": "Store model weights in secure registries requiring SHA-256 validation before container deployment.",
+    "expected_evidence": [
+      "Model Weight Cryptographic Hash Log",
+      "Dataset Provenance Verification Audit"
+    ],
+    "test_procedure": "Verify container startup verifies model artifact SHA-256 against approved baseline."
+  },
+  {
+    "id": "UC-AI-SEC-003",
+    "code": "UC-AI-SEC-003",
+    "title": "Model Output Sanitization and Downstream Encoding",
+    "domain": "Secure Development",
+    "objective": "Validate and encode all generative outputs before rendering in user browsers or passing into downstream databases, APIs, or shells.",
+    "description": "Treat model responses as untrusted to prevent Cross-Site Scripting (XSS), Server-Side Request Forgery (SSRF), and SQL/Command Injection.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Remote code execution, downstream database corruption, client-side script execution",
+    "implementation_guidance": "Employ context-aware escaping, HTML encoding, and parameterized database queries on model outputs.",
+    "expected_evidence": [
+      "Output Sanitization Middleware Code Review",
+      "Static Application Security Testing (SAST) Report"
+    ],
+    "test_procedure": "Send simulated XSS/SQL payloads through LLM output pipeline and verify downstream sanitization."
+  },
+  {
+    "id": "UC-AI-AGT-001",
+    "code": "UC-AI-AGT-001",
+    "title": "Agent Least Privilege and Tool Permission Boundaries",
+    "domain": "Agent Security",
+    "objective": "Enforce strict least-privilege role boundaries and short-lived credentials for autonomous AI agents and tool-calling functions.",
+    "description": "Agents must only access approved tools, databases, and APIs necessary for their specific business tasks, using ephemeral scoped tokens.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Agent privilege escalation, unauthorized system mutation, lateral network traversal",
+    "implementation_guidance": "Issue ephemeral tokens scoped to specific tool invocations with strict rate limits and network egress rules.",
+    "expected_evidence": [
+      "Agent Permission Graph & IAM Policies",
+      "Tool Execution Scope Audit Log"
+    ],
+    "test_procedure": "Attempt out-of-scope API and database calls from agent context and verify immediate rejection."
+  },
+  {
+    "id": "UC-AI-AGT-002",
+    "code": "UC-AI-AGT-002",
+    "title": "Emergency Kill-Switch and Autonomous Action Disablement",
+    "domain": "Human Oversight",
+    "objective": "Provide an instantaneous, immutable kill-switch to immediately halt autonomous agent execution and revoke access tokens upon abnormal behavior.",
+    "description": "Administrators must be able to trigger a centralized kill switch stopping all active agent loops and isolating affected systems.",
+    "control_type": "Corrective",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous / Tested Semi-Annually",
+    "risk_addressed": "Uncontrolled agent runaway loops, rogue actions, cascading failures",
+    "implementation_guidance": "Implement global and per-agent kill-switch API endpoints with circuit-breaker decorators in agent runtimes.",
+    "expected_evidence": [
+      "Kill-Switch Architecture Documentation",
+      "Semi-Annual Kill-Switch Drill Execution Log"
+    ],
+    "test_procedure": "Simulate runaway agent action and execute kill-switch; verify agent terminates within 3 seconds."
+  },
+  {
+    "id": "UC-AI-AGT-003",
+    "code": "UC-AI-AGT-003",
+    "title": "Mandatory Human-in-the-Loop Approval Gates for High-Impact Actions",
+    "domain": "Human Oversight",
+    "objective": "Require synchronous, authenticated human approval before an AI agent can execute financial, destructive, legal, or code-deployment actions.",
+    "description": "High-impact tool invocations (e.g. database DROP/DELETE, payments, email broadcasts, production deployment) must pause for human confirmation.",
+    "control_type": "Preventive",
+    "implementation_type": "Semi-automated",
+    "control_frequency": "Per High-Impact Action",
+    "risk_addressed": "Unauthorized financial loss, catastrophic data deletion, unintended communication",
+    "implementation_guidance": "Configure approval gate middleware requiring authorized human signature with timeout fallback.",
+    "expected_evidence": [
+      "Human Approval Gate Workflow Configuration",
+      "Sample Approval Audit Trail with Approver ID"
+    ],
+    "test_procedure": "Trigger high-consequence agent action and verify execution is blocked until human explicitly signs off."
+  },
+  {
+    "id": "UC-AI-DAT-001",
+    "code": "UC-AI-DAT-001",
+    "title": "Automated PII Detection, Redaction, and Data Minimization",
+    "domain": "Privacy",
+    "objective": "Prevent unauthorized transmission and storage of personal or sensitive data in prompts, training datasets, and RAG knowledge bases.",
+    "description": "Deploy real-time PII detection and masking on incoming user inputs and external document indexing pipelines.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Regulatory privacy breaches (GDPR, DPDPA), confidential data leakage",
+    "implementation_guidance": "Deploy entity-recognition masking (e.g. Microsoft Presidio) prior to vector database ingestion or model API forwarding.",
+    "expected_evidence": [
+      "PII Masking Pipeline Configuration",
+      "DLP Data Flow Test Log"
+    ],
+    "test_procedure": "Inject synthetic PII (names, SSNs, credit cards) and verify prompt masking before model ingestion."
+  },
+  {
+    "id": "UC-AI-DAT-002",
+    "code": "UC-AI-DAT-002",
+    "title": "Data Protection Impact Assessment (DPIA) for AI Processing",
+    "domain": "Privacy",
+    "objective": "Perform and document a formal DPIA for all AI systems processing personal data or undertaking systematic automated profiling.",
+    "description": "Assess proportionality, data subject rights, algorithmic bias, and potential negative impacts on natural persons prior to processing.",
+    "control_type": "Preventive",
+    "implementation_type": "Manual",
+    "control_frequency": "Pre-Deployment / Material Update",
+    "risk_addressed": "GDPR Article 35 non-compliance, privacy regulatory penalties",
+    "implementation_guidance": "Execute DPIA checklist with designated DPO signoff for all AI applications handling personal data.",
+    "expected_evidence": [
+      "Completed & Approved DPIA Report",
+      "DPO Review and Approval Documentation"
+    ],
+    "test_procedure": "Review DPIA repository against AI systems marked as processing personal data in the inventory."
+  },
+  {
+    "id": "UC-AI-TRN-001",
+    "code": "UC-AI-TRN-001",
+    "title": "Mandatory AI Interaction Disclosure and Chatbot Transparency",
+    "domain": "Transparency",
+    "objective": "Ensure end-users are explicitly and prominently informed whenever they are interacting directly with an AI system or chatbot.",
+    "description": "User interfaces must display clear notices that the conversational partner or service is driven by artificial intelligence.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Deceptive AI interaction, EU AI Act Article 50 non-compliance",
+    "implementation_guidance": "Incorporate permanent header badges and welcome messages in all customer-facing AI applications.",
+    "expected_evidence": [
+      "UI Screenshot Showing AI Disclosure",
+      "Frontend UI Design System Standard"
+    ],
+    "test_procedure": "Inspect user interface to verify explicit AI disclosure is visible upon first user interaction."
+  },
+  {
+    "id": "UC-AI-TRN-002",
+    "code": "UC-AI-TRN-002",
+    "title": "Synthetic Content Provenance and Watermarking",
+    "domain": "Transparency",
+    "objective": "Embed verifiable cryptographic watermarks or metadata in artificially generated images, audio, video, or synthetic text.",
+    "description": "Integrate C2PA or machine-readable provenance metadata into AI-generated media to trace origin and authenticity.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Deepfake dissemination, disinformation, intellectual property infringement",
+    "implementation_guidance": "Attach C2PA cryptographic manifests to all synthetic media exports.",
+    "expected_evidence": [
+      "C2PA Integration Code Snippet",
+      "Sample Watermarked Artifact Verification Log"
+    ],
+    "test_procedure": "Extract metadata from generated media file and verify cryptographic provenance signature."
+  },
+  {
+    "id": "UC-AI-LOG-001",
+    "code": "UC-AI-LOG-001",
+    "title": "Immutable AI Operational Event Logging and Audit Trail",
+    "domain": "Logging",
+    "objective": "Automatically generate tamper-evident audit logs capturing AI inputs, outputs, model versions, timestamps, user identities, and latency.",
+    "description": "Maintain write-once or cryptographically verified operational logs to enable post-market monitoring and forensic investigation.",
+    "control_type": "Detective",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Inability to audit AI decisions, unmonitored operational failures, regulatory penalties",
+    "implementation_guidance": "Stream inference audit records to a secure centralized SIEM with minimum 1-year retention.",
+    "expected_evidence": [
+      "Centralized Logging Architecture Spec",
+      "Sample Anonymized Audit Log File"
+    ],
+    "test_procedure": "Verify log ingestion pipeline captures test inferences and verify log tampering detection."
+  },
+  {
+    "id": "UC-AI-INC-001",
+    "code": "UC-AI-INC-001",
+    "title": "AI Incident Management and Rapid Regulatory Escalation",
+    "domain": "Incident Management",
+    "objective": "Establish formal incident handling procedures for AI failures, safety violations, hallucinations, security breaches, and regulatory reporting.",
+    "description": "Define severity tiers, containment runbooks, root-cause investigation steps, and regulatory notification workflows (24h/72h deadlines).",
+    "control_type": "Corrective",
+    "implementation_type": "Semi-automated",
+    "control_frequency": "Per Incident",
+    "risk_addressed": "Uncontained AI failure, missed statutory breach reporting deadlines (NIS2, EU AI Act, DORA)",
+    "implementation_guidance": "Create AI incident runbooks with automated escalation triggers to Legal, CISO, and DPO.",
+    "expected_evidence": [
+      "AI Incident Response Plan",
+      "Post-Incident Review / RCA Template"
+    ],
+    "test_procedure": "Conduct simulated AI incident tabletop exercise and verify notification timeline compliance."
+  },
+  {
+    "id": "UC-AI-SC-001",
+    "code": "UC-AI-SC-001",
+    "title": "Third-Party AI Foundation Model and Vendor Due Diligence",
+    "domain": "Supply Chain Security",
+    "objective": "Assess and continuously monitor cybersecurity, data privacy, and model risk postures of external AI vendors and model providers.",
+    "description": "Perform due diligence on training data retention policies, opt-out mechanisms for customer data training, certifications (SOC 2, ISO 27001), and SLAs.",
+    "control_type": "Preventive",
+    "implementation_type": "Semi-automated",
+    "control_frequency": "Annual / Per Vendor Intake",
+    "risk_addressed": "Vendor data leakage, third-party model deprecation, unvetted sub-processors",
+    "implementation_guidance": "Require signed Data Processing Addenda (DPA) explicitly barring vendors from training models on enterprise inputs.",
+    "expected_evidence": [
+      "AI Vendor Security Assessment Questionnaire",
+      "Signed Vendor DPA with Zero-Data-Retention Clause"
+    ],
+    "test_procedure": "Inspect vendor register to ensure all active external AI providers have valid DPAs with no-train clauses."
+  },
+  {
+    "id": "UC-AI-SC-002",
+    "code": "UC-AI-SC-002",
+    "title": "Software and AI Bill of Materials (AIBOM) Management",
+    "domain": "Supply Chain Security",
+    "objective": "Generate and maintain a machine-readable bill of materials detailing all base models, fine-tuned weights, libraries, and datasets.",
+    "description": "Maintain CycloneDX or SPDX formatted SBOMs for all AI applications, tracking known CVEs and component licenses.",
+    "control_type": "Detective",
+    "implementation_type": "Automated",
+    "control_frequency": "Per CI/CD Build",
+    "risk_addressed": "Vulnerable third-party packages, license violations, unpatched libraries",
+    "implementation_guidance": "Integrate automated SBOM generation (Syft/Trivy) into CI/CD pipelines.",
+    "expected_evidence": [
+      "Automated CI/CD SBOM Generation Pipeline",
+      "Sample CycloneDX AIBOM File"
+    ],
+    "test_procedure": "Trigger build pipeline and confirm valid SBOM artifact is generated and scanned for vulnerabilities."
+  },
+  {
+    "id": "UC-AI-TST-001",
+    "code": "UC-AI-TST-001",
+    "title": "Pre-Deployment AI Red Teaming and Adversarial Testing",
+    "domain": "Testing & Validation",
+    "objective": "Subject AI systems to rigorous adversarial testing, jailbreak simulations, and red-teaming prior to production release.",
+    "description": "Evaluate model resilience against jailbreaks, prompt extraction, unauthorized agency, and safety guardrail evasion.",
+    "control_type": "Detective",
+    "implementation_type": "Semi-automated",
+    "control_frequency": "Pre-Deployment / Annual",
+    "risk_addressed": "Undetected model vulnerabilities, catastrophic safety failures",
+    "implementation_guidance": "Engage internal or external red teams to execute adversarial attack scenarios mapped to MITRE ATLAS.",
+    "expected_evidence": [
+      "AI Red Team Assessment Report",
+      "Remediation Verification Matrix"
+    ],
+    "test_procedure": "Verify signed red-team report exists for all high-risk or external-facing AI releases."
+  },
+  {
+    "id": "UC-AI-TST-002",
+    "code": "UC-AI-TST-002",
+    "title": "Algorithmic Bias, Fairness, and Disparate Impact Evaluation",
+    "domain": "Fairness & Bias",
+    "objective": "Quantitatively evaluate AI systems for disparate impact, demographic disparity, and algorithmic bias across protected groups.",
+    "description": "Measure statistical parity, equal opportunity, and disparate impact ratios across sensitive demographic attributes.",
+    "control_type": "Detective",
+    "implementation_type": "Automated",
+    "control_frequency": "Pre-Deployment / Quarterly",
+    "risk_addressed": "Discriminatory algorithmic outcomes, regulatory penalties, ethical violations",
+    "implementation_guidance": "Run automated fairness toolkits (e.g. Fairlearn, AIF360) and mandate disparate impact ratio >= 0.80.",
+    "expected_evidence": [
+      "Algorithmic Fairness Evaluation Report",
+      "Disparate Impact Benchmark Metrics"
+    ],
+    "test_procedure": "Execute fairness test suite on validation dataset and confirm all metrics meet approved tolerance thresholds."
+  },
+  {
+    "id": "UC-AI-ACC-001",
+    "code": "UC-AI-ACC-001",
+    "title": "RAG Grounding and Hallucination Verification",
+    "domain": "Accuracy & Robustness",
+    "objective": "Enforce factual grounding in generative models using verified knowledge stores and automated hallucination detection.",
+    "description": "Generative outputs must cite authoritative source passages and pass factual consistency threshold checks before delivery.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Confabulation, misinformation, erroneous business or legal outputs",
+    "implementation_guidance": "Implement retrieval-augmented generation with vector citations and secondary LLM-as-judge fact checking.",
+    "expected_evidence": [
+      "RAG Architecture & Citation Pipeline Spec",
+      "Hallucination Benchmark Evaluation"
+    ],
+    "test_procedure": "Evaluate RAG responses against ground truth context and verify citation presence and factual accuracy score >= 90%."
+  },
+  {
+    "id": "UC-AI-AGT-004",
+    "code": "UC-AI-AGT-004",
+    "title": "Agent Context and Memory Isolation",
+    "domain": "Agent Security",
+    "objective": "Isolate agent memory scratchpads and persistent context stores to prevent memory tampering or cross-session data contamination.",
+    "description": "Multi-turn agent memory stores must be tenant-partitioned, authenticated, and sanitized against indirect memory injection.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Memory poisoning, cross-tenant data leakage in multi-agent workflows",
+    "implementation_guidance": "Implement cryptographically partitioned vector stores and session-isolated scratchpads.",
+    "expected_evidence": [
+      "Agent Memory Partitioning Spec",
+      "Multi-Tenant Memory Isolation Test"
+    ],
+    "test_procedure": "Simulate concurrent multi-tenant agent execution and assert memory keys remain mutually inaccessible."
+  },
+  {
+    "id": "UC-AI-AGT-005",
+    "code": "UC-AI-AGT-005",
+    "title": "Autonomous Code Execution Sandboxing",
+    "domain": "Agent Security",
+    "objective": "Enclose any dynamic code generation or execution initiated by AI agents in ephemeral, non-privileged, network-isolated sandboxes.",
+    "description": "When agents generate Python, Bash, or SQL commands, execution must occur in short-lived microVMs or containers with zero host access.",
+    "control_type": "Preventive",
+    "implementation_type": "Automated",
+    "control_frequency": "Continuous",
+    "risk_addressed": "Arbitrary remote code execution, host system compromise, cryptocurrency mining",
+    "implementation_guidance": "Execute agent scripts inside gVisor/Firecracker microVMs with strict memory/CPU cgroups and disabled outbound internet.",
+    "expected_evidence": [
+      "Code Execution Sandbox Architecture Spec",
+      "Container Escape / Penetration Test Report"
+    ],
+    "test_procedure": "Instruct agent to execute container escape payload and verify sandbox containment."
+  },
+  {
+    "id": "UC-AI-VUL-001",
+    "code": "UC-AI-VUL-001",
+    "title": "Coordinated AI Vulnerability Management and Rapid Patching",
+    "domain": "Vulnerability Management",
+    "objective": "Establish continuous scanning and remediation SLA for software dependencies, model weights, and AI inference runtimes.",
+    "description": "Scan containers, Python environments, and model weights against CVEs and provide security patches within defined statutory windows.",
+    "control_type": "Corrective",
+    "implementation_type": "Automated",
+    "control_frequency": "Daily / Continuous",
+    "risk_addressed": "Exploitation of known zero-days in AI libraries (Torch, Transformers, LangChain, vLLM)",
+    "implementation_guidance": "Automate container image scanning in CI/CD and enforce 7-day SLA on critical AI infrastructure CVEs.",
+    "expected_evidence": [
+      "Vulnerability Management Policy & SLA",
+      "Automated Daily Vulnerability Scan Reports"
+    ],
+    "test_procedure": "Inspect vulnerability backlog to confirm critical CVEs are resolved within SLA."
+  },
+  {
+    "id": "UC-AI-VND-001",
+    "code": "UC-AI-VND-001",
+    "title": "AI Model Training Opt-Out and Intellectual Property Protection",
+    "domain": "Vendor Management",
+    "objective": "Ensure all agreements with external foundation model providers legally and technically forbid training on enterprise prompts.",
+    "description": "Commercial agreements and API terms must guarantee enterprise customer prompts and completions are never utilized for model fine-tuning.",
+    "control_type": "Preventive",
+    "implementation_type": "Manual",
+    "control_frequency": "Per Vendor Contract",
+    "risk_addressed": "Loss of intellectual property, leakage of trade secrets into public models",
+    "implementation_guidance": "Review and verify enterprise API contracts with providers (OpenAI, Anthropic, Google, Microsoft) have zero-data-retention and no-training terms.",
+    "expected_evidence": [
+      "Executed Enterprise Model Agreement",
+      "Zero Data Retention Confirmation"
+    ],
+    "test_procedure": "Review 100% of vendor agreements in use by AI applications for explicit no-training clauses."
+  },
+  {
+    "id": "UC-AI-RES-001",
+    "code": "UC-AI-RES-001",
+    "title": "AI Service Fallback and Operational Resilience",
+    "domain": "Resilience",
+    "objective": "Implement automated failover, model redundancy, and graceful degradation for mission-critical AI applications.",
+    "description": "Critical business processes relying on AI must maintain deterministic rule-based fallbacks or secondary model providers during outages.",
+    "control_type": "Corrective",
+    "implementation_type": "Automated",
+    "control_frequency": "Semi-Annual Test",
+    "risk_addressed": "Operational downtime, foundation model API outages, business disruption",
+    "implementation_guidance": "Configure multi-region load balancing and automatic fallback to alternative LLMs or rule-based heuristics.",
+    "expected_evidence": [
+      "AI Resilience & Fallback Runbook",
+      "Simulated Provider Outage Drill Log"
+    ],
+    "test_procedure": "Sever connectivity to primary model provider in staging and verify seamless failover to secondary model within 10 seconds."
+  }
+]

@@ -1,0 +1,246 @@
+{
+  "ruleset_version": "2026.1.0",
+  "categories": {
+    "prohibited_practice": {
+      "risk_level": "Unacceptable / Prohibited",
+      "eu_ai_act_classification": "Prohibited Practice (Article 5)",
+      "rationale_prefix": "CRITICAL: System exhibits characteristics prohibited under EU AI Act Article 5:",
+      "legal_review_required": true,
+      "priority": 4
+    },
+    "high_risk_classification": {
+      "risk_level": "High Risk",
+      "eu_ai_act_classification": "High-Risk AI System (Annex III)",
+      "rationale_prefix": "System is classified as High-Risk under EU AI Act Annex III. Mandatory requirements apply under Articles 9 (Risk Management), 10 (Data Governance), 11 (Technical Documentation), 12 (Logging), 13 (Transparency), 14 (Human Oversight), and 15 (Cybersecurity).",
+      "legal_review_required": true,
+      "priority": 3
+    },
+    "transparency_risk": {
+      "risk_level": "Specific Transparency",
+      "eu_ai_act_classification": "Specific Transparency Risk (Article 50)",
+      "rationale_prefix": "System interacts directly with natural persons and/or generates synthetic content, triggering mandatory transparency obligations under Article 50 (AI interaction disclosure and synthetic content watermarking).",
+      "legal_review_required": false,
+      "priority": 2
+    },
+    "minimal_risk": {
+      "risk_level": "Minimal Risk",
+      "eu_ai_act_classification": "Minimal / No Specific Legal Risk",
+      "rationale_prefix": "System does not trigger Annex III high-risk use cases or prohibited practices under EU AI Act based on current intake answers.",
+      "legal_review_required": false,
+      "priority": 1
+    }
+  },
+  "rules": [
+    {
+      "rule_id": "EU-AIA-ART5-1D-BIOMETRIC-LE",
+      "framework": "eu_ai_act",
+      "requirement_id": "EU-AIA-ART-05",
+      "category": "prohibited_practice",
+      "title": "Real-time remote biometric identification for law enforcement",
+      "version": "2026.1",
+      "effective_date": "2025-02-02",
+      "jurisdiction": ["EU"],
+      "conditions": {"all": [
+        {"field": "decision_domains", "op": "contains", "value": "biometrics"},
+        {"field": "business_purpose_lower", "op": "contains", "value": "law_enforcement"}
+      ]},
+      "reason_template": "Article 5(1)(d): Real-time remote biometric identification in public spaces for law enforcement."
+    },
+    {
+      "rule_id": "EU-AIA-ART5-1C-SOCIAL-SCORING",
+      "framework": "eu_ai_act",
+      "requirement_id": "EU-AIA-ART-05",
+      "category": "prohibited_practice",
+      "title": "Social scoring of natural persons",
+      "version": "2026.1",
+      "effective_date": "2025-02-02",
+      "jurisdiction": ["EU"],
+      "conditions": {"all": [
+        {"field": "business_purpose_lower", "op": "contains", "value": "social_scoring"}
+      ]},
+      "reason_template": "Article 5(1)(c): Social scoring evaluation or classification of natural persons."
+    },
+    {
+      "rule_id": "EU-AIA-ANNEXIII-AUTOMATED-DECISIONS",
+      "framework": "eu_ai_act",
+      "requirement_id": "EU-AIA-ART-09",
+      "category": "high_risk_classification",
+      "title": "Automated decision-making in a critical Annex III domain",
+      "version": "2026.1",
+      "effective_date": "2026-08-02",
+      "jurisdiction": ["EU"],
+      "conditions": {"all": [
+        {"field": "makes_decisions_about_individuals", "op": "is_true"},
+        {"field": "decision_domains", "op": "intersects", "value": ["employment", "credit", "education", "insurance", "healthcare", "biometrics"]},
+        {"field": "eu_exposed", "op": "is_true"}
+      ]},
+      "reason_template": "Annex III High-Risk Trigger: System makes automated decisions materially affecting natural persons in critical areas: {{high_risk_domain_intersection}}."
+    },
+    {
+      "rule_id": "EU-AIA-ART50-TRANSPARENCY",
+      "framework": "eu_ai_act",
+      "requirement_id": "EU-AIA-ART-50",
+      "category": "transparency_risk",
+      "title": "Direct human interaction or synthetic content generation",
+      "version": "2026.1",
+      "effective_date": "2025-08-02",
+      "jurisdiction": ["EU"],
+      "conditions": {"all": [
+        {"field": "eu_exposed", "op": "is_true"},
+        {"any": [
+          {"field": "interacts_directly_with_humans", "op": "is_true"},
+          {"field": "generates_synthetic_content", "op": "is_true"}
+        ]}
+      ]},
+      "reason_template": "Interacts directly with natural persons and/or generates synthetic content."
+    },
+    {
+      "rule_id": "EU-EXPOSURE-FRAMEWORK-INCLUSION",
+      "framework": "eu_ai_act",
+      "requirement_id": null,
+      "category": "additive",
+      "title": "EU market exposure brings the EU AI Act into scope",
+      "version": "2026.1",
+      "effective_date": "2024-08-01",
+      "jurisdiction": ["EU"],
+      "conditions": {"all": [
+        {"field": "eu_exposed", "op": "is_true"}
+      ]},
+      "frameworks_added": ["eu_ai_act"],
+      "controls_added": ["UC-AI-INV-002", "UC-AI-RSK-001"],
+      "reason_template": null
+    },
+    {
+      "rule_id": "GDPR-PERSONAL-DATA-EU",
+      "framework": "gdpr_ai",
+      "requirement_id": "GDPR-ART-35",
+      "category": "additive",
+      "title": "Personal data processing with EU exposure",
+      "version": "2026.1",
+      "effective_date": "2018-05-25",
+      "jurisdiction": ["EU"],
+      "conditions": {"all": [
+        {"field": "processes_personal_data", "op": "is_true"},
+        {"field": "eu_exposed", "op": "is_true"}
+      ]},
+      "frameworks_added": ["gdpr_ai"],
+      "controls_added": ["UC-AI-DAT-001", "UC-AI-DAT-002"],
+      "privacy_regulation": "GDPR (Regulation (EU) 2016/679)",
+      "reason_template": "Processes EU natural person personal data, activating GDPR Art. 25 (Privacy by Design) and Art. 35 (DPIA)."
+    },
+    {
+      "rule_id": "GDPR-AUTOMATED-PROFILING",
+      "framework": "gdpr_ai",
+      "requirement_id": "GDPR-ART-22",
+      "category": "additive",
+      "title": "Automated profiling of individuals",
+      "version": "2026.1",
+      "effective_date": "2018-05-25",
+      "jurisdiction": ["EU"],
+      "conditions": {"all": [
+        {"field": "processes_personal_data", "op": "is_true"},
+        {"field": "makes_decisions_about_individuals", "op": "is_true"}
+      ]},
+      "controls_added": ["UC-AI-AGT-003"],
+      "reason_template": "Automated profiling triggers GDPR Article 22 human intervention requirements."
+    },
+    {
+      "rule_id": "DPDPA-INDIA-DEPLOYMENT",
+      "framework": "india_dpdpa",
+      "requirement_id": "DPDPA-SEC-08",
+      "category": "additive",
+      "title": "Deployment in India with personal data processing",
+      "version": "2026.1",
+      "effective_date": "2023-08-11",
+      "jurisdiction": ["IN"],
+      "conditions": {"all": [
+        {"field": "processes_personal_data", "op": "is_true"},
+        {"field": "deployment_countries", "op": "intersects", "value": ["IN", "INDIA"]}
+      ]},
+      "frameworks_added": ["india_dpdpa"],
+      "controls_added": ["UC-AI-DAT-001"],
+      "privacy_regulation": "India DPDPA 2023",
+      "reason_template": "Deployment in India triggers Section 8 Data Fiduciary security obligations and Data Principal rights."
+    },
+    {
+      "rule_id": "GENAI-FOUNDATION-MODEL-SECURITY",
+      "framework": "nist_ai_600_1",
+      "requirement_id": null,
+      "category": "additive",
+      "title": "Generative AI / foundation model security baseline",
+      "version": "2026.1",
+      "effective_date": "2024-07-26",
+      "jurisdiction": ["Global"],
+      "conditions": {"any": [
+        {"field": "is_generative_ai", "op": "is_true"},
+        {"field": "uses_foundation_model", "op": "is_true"}
+      ]},
+      "frameworks_added": ["nist_ai_600_1", "owasp_llm", "mitre_atlas"],
+      "controls_added": ["UC-AI-SEC-001", "UC-AI-SEC-002", "UC-AI-SEC-003", "UC-AI-ACC-001", "UC-AI-SC-001", "UC-AI-VND-001"],
+      "reason_template": null
+    },
+    {
+      "rule_id": "GENAI-SYNTHETIC-CONTENT-LABELING",
+      "framework": "eu_ai_act",
+      "requirement_id": "EU-AIA-ART-50",
+      "category": "additive",
+      "title": "Synthetic content labeling control",
+      "version": "2026.1",
+      "effective_date": "2025-08-02",
+      "jurisdiction": ["Global"],
+      "conditions": {"all": [
+        {"field": "generates_synthetic_content", "op": "is_true"}
+      ]},
+      "controls_added": ["UC-AI-TRN-002"],
+      "reason_template": null
+    },
+    {
+      "rule_id": "AGENTIC-AUTONOMOUS-EXECUTION",
+      "framework": "owasp_agentic_ai",
+      "requirement_id": null,
+      "category": "additive",
+      "title": "Autonomous agent tool-use / code execution / payments",
+      "version": "2026.1",
+      "effective_date": "2025-01-01",
+      "jurisdiction": ["Global"],
+      "conditions": {"any": [
+        {"field": "is_autonomous_agent", "op": "is_true"},
+        {"field": "can_execute_code", "op": "is_true"},
+        {"field": "can_access_database", "op": "is_true"},
+        {"field": "can_initiate_payments", "op": "is_true"}
+      ]},
+      "frameworks_added": ["owasp_agentic_ai"],
+      "controls_added": ["UC-AI-AGT-001", "UC-AI-AGT-002", "UC-AI-AGT-003", "UC-AI-AGT-004", "UC-AI-AGT-005"],
+      "agent_security_flag": true,
+      "reason_template": "System deploys autonomous agent capabilities (tools, code execution, database mutation, or payment initiation), triggering mandatory agent privilege boundaries, tool sandboxing, and emergency kill-switches."
+    },
+    {
+      "rule_id": "SUPPLY-CHAIN-BASELINE",
+      "framework": "eu_cra",
+      "requirement_id": null,
+      "category": "additive",
+      "title": "Baseline supply-chain / secure development controls",
+      "version": "2026.1",
+      "effective_date": "2024-12-10",
+      "jurisdiction": ["EU", "Global"],
+      "conditions": {"all": []},
+      "frameworks_added": ["eu_cra", "nist_sp_800_218", "nist_sp_800_161"],
+      "controls_added": ["UC-AI-SC-002", "UC-AI-VUL-001", "UC-AI-RES-001"],
+      "reason_template": null
+    },
+    {
+      "rule_id": "BASELINE-GOVERNANCE",
+      "framework": "nist_ai_rmf",
+      "requirement_id": null,
+      "category": "additive",
+      "title": "Baseline governance controls applied to every intake",
+      "version": "2026.1",
+      "effective_date": "2023-01-26",
+      "jurisdiction": ["Global"],
+      "conditions": {"all": []},
+      "frameworks_added": ["nist_ai_rmf", "nist_csf_2"],
+      "controls_added": ["UC-AI-GOV-001", "UC-AI-GOV-002", "UC-AI-INV-001", "UC-AI-INV-002", "UC-AI-RSK-001", "UC-AI-LOG-001", "UC-AI-INC-001"],
+      "reason_template": null
+    }
+  ]
+}

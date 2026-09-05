@@ -1,0 +1,55 @@
+{
+  "id": "nist_sp_800_218",
+  "name": "NIST SP 800-218 Secure Software Development Framework (SSDF)",
+  "short_name": "NIST SSDF & SP 800-218A",
+  "official_reference": "NIST SP 800-218 / SP 800-218A",
+  "jurisdiction": "United States / International",
+  "type": "Standard",
+  "version": "1.1 & 800-218A Community Draft",
+  "publication_date": "2022-02-03",
+  "effective_date": "2022-02-03",
+  "official_url": "https://csrc.nist.gov/publications/detail/sp/800-218/final",
+  "status": "current",
+  "description": "Standardized practices for secure software development lifecycle, augmented with NIST SP 800-218A recommendations for securing generative AI and machine learning development workflows.",
+  "applicability_conditions": [
+    "Organizations developing software, proprietary machine learning models, or fine-tuning foundation models"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "PW",
+      "title": "Produce Well-Secured Software",
+      "requirements": [
+        {
+          "id": "NIST-SSDF-PW-1.1",
+          "article": "PW.1.1",
+          "title": "Design Software to Meet Security Requirements",
+          "normalized_requirement": "Identify and document software and AI security requirements early during design, including threat modeling for model training pipelines, RAG stores, and API endpoints.",
+          "applicability": "Software and AI development",
+          "effective_date": "2022-02-03",
+          "implementation_guidance": "Conduct threat modeling on all AI software applications before production release.",
+          "evidence_expected": [
+            "AI Threat Model Document",
+            "Security Requirements Specification"
+          ],
+          "domain": "Secure Development",
+          "official_url": "https://csrc.nist.gov/publications/detail/sp/800-218/final"
+        },
+        {
+          "id": "NIST-SSDF-PW-4.1",
+          "article": "PW.4.1",
+          "title": "Reuse Secure Existing Software and AI Components",
+          "normalized_requirement": "Acquire well-maintained, secure third-party components, foundation models, and pre-trained weights, validating their provenance and security posture.",
+          "applicability": "All software using external dependencies",
+          "effective_date": "2022-02-03",
+          "implementation_guidance": "Establish an approved registry of models and packages; reject unvetted HuggingFace weights or PyPI packages.",
+          "evidence_expected": [
+            "Approved AI Component Catalog",
+            "Third-Party Dependency Audit"
+          ],
+          "domain": "Supply Chain Security",
+          "official_url": "https://csrc.nist.gov/publications/detail/sp/800-218/final"
+        }
+      ]
+    }
+  ]
+}

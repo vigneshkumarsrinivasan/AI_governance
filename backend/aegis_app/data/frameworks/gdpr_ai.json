@@ -1,0 +1,70 @@
+{
+  "id": "gdpr_ai",
+  "name": "General Data Protection Regulation (AI Provisions)",
+  "short_name": "GDPR (AI & Automated Processing)",
+  "official_reference": "Regulation (EU) 2016/679",
+  "jurisdiction": "European Union / Global extraterritorial",
+  "type": "Regulation / Law",
+  "version": "2016/679",
+  "publication_date": "2016-04-27",
+  "effective_date": "2018-05-25",
+  "official_url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+  "status": "current",
+  "description": "European Union data protection regulation governing the processing of personal data, with specific legal requirements for automated decision-making, profiling, transparency, and data protection impact assessments.",
+  "applicability_conditions": [
+    "Processing personal data of individuals located in the European Union by any controller or processor globally"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "Core Rights & Obligations",
+      "title": "Automated Processing & Impact Assessments",
+      "requirements": [
+        {
+          "id": "GDPR-ART-22",
+          "article": "Article 22",
+          "title": "Automated Individual Decision-Making, Including Profiling",
+          "normalized_requirement": "The data subject shall have the right not to be subject to a decision based solely on automated processing, including profiling, which produces legal effects concerning him or her or similarly significantly affects him or her, unless authorized by law, explicit consent, or necessary for entering a contract.",
+          "applicability": "AI systems making automated decisions affecting individuals",
+          "effective_date": "2018-05-25",
+          "implementation_guidance": "Implement human intervention points and the right for individuals to contest automated decisions.",
+          "evidence_expected": [
+            "Human Intervention Procedure for Automated Decisions",
+            "Article 22 Legal Justification Document"
+          ],
+          "domain": "Human Oversight & Privacy",
+          "official_url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+        },
+        {
+          "id": "GDPR-ART-25",
+          "article": "Article 25",
+          "title": "Data Protection by Design and by Default",
+          "normalized_requirement": "The controller shall implement appropriate technical and organisational measures, such as pseudonymisation and data minimisation, which are designed to implement data-protection principles effectively into AI systems.",
+          "applicability": "All AI systems processing personal data",
+          "effective_date": "2018-05-25",
+          "implementation_guidance": "Enforce data minimization, pseudonymization in training/RAG pipelines, and automated retention limits.",
+          "evidence_expected": [
+            "Privacy-by-Design Architecture Review",
+            "Data Minimization Implementation Proof"
+          ],
+          "domain": "Privacy & Data Protection",
+          "official_url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+        },
+        {
+          "id": "GDPR-ART-35",
+          "article": "Article 35",
+          "title": "Data Protection Impact Assessment (DPIA)",
+          "normalized_requirement": "Where a type of processing in particular using new technologies such as AI is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall carry out an assessment of the impact of the processing operations.",
+          "applicability": "AI systems using new technologies or systematic evaluation/profiling",
+          "effective_date": "2018-05-25",
+          "implementation_guidance": "Conduct a formal DPIA documenting processing necessity, proportionality, risks, and mitigation measures before deployment.",
+          "evidence_expected": [
+            "Data Protection Impact Assessment (DPIA) Report",
+            "DPO Approval Signoff"
+          ],
+          "domain": "Privacy & Data Protection",
+          "official_url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+        }
+      ]
+    }
+  ]
+}

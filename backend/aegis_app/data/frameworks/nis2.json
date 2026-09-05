@@ -1,0 +1,52 @@
+{
+  "id": "nis2",
+  "name": "Directive on Measures for a High Common Level of Cybersecurity across the Union (NIS2)",
+  "short_name": "NIS2 Directive",
+  "official_reference": "Directive (EU) 2022/2555",
+  "jurisdiction": "European Union",
+  "type": "Directive / Law",
+  "version": "2022/2555",
+  "publication_date": "2022-12-27",
+  "effective_date": "2024-10-18",
+  "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555",
+  "status": "current",
+  "description": "Sets stringent cybersecurity risk-management requirements and mandatory reporting obligations for essential and important entities across critical infrastructure, digital services, and supply chains.",
+  "chapters": [
+    {
+      "chapter_id": "Article 21",
+      "title": "Cybersecurity Risk-Management Measures",
+      "requirements": [
+        {
+          "id": "NIS2-ART-21-SEC-MEASURES",
+          "article": "Article 21(2)",
+          "title": "Minimum Technical Cybersecurity Measures",
+          "normalized_requirement": "Entities shall take appropriate and proportionate technical, operational, and organizational measures to manage risks to network and information systems, including AI infrastructure, covering incident handling, supply chain security, and cryptography.",
+          "applicability": "Essential and important entities in the EU",
+          "effective_date": "2024-10-18",
+          "implementation_guidance": "Enforce baseline cybersecurity controls across all AI hosting environments and cloud pipelines.",
+          "evidence_expected": [
+            "NIS2 Cybersecurity Compliance Audit",
+            "Encryption & Key Management Policy"
+          ],
+          "domain": "Security & Robustness",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555"
+        },
+        {
+          "id": "NIS2-ART-23-REPORTING",
+          "article": "Article 23",
+          "title": "Reporting Obligations for Significant Incidents",
+          "normalized_requirement": "Entities shall notify CSIRT or competent authorities without undue delay of any significant incident: an early warning within 24 hours, incident notification within 72 hours, and a final report within 1 month.",
+          "applicability": "Essential and important entities",
+          "effective_date": "2024-10-18",
+          "implementation_guidance": "Incorporate 24-hour early warning triggers for AI-induced security outages or data breaches.",
+          "evidence_expected": [
+            "Cyber Incident Escalation Runbook",
+            "Regulatory Notification Template"
+          ],
+          "domain": "Incident Management",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555"
+        }
+      ]
+    }
+  ]
+}

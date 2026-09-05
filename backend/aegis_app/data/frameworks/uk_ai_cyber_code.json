@@ -1,0 +1,52 @@
+{
+  "id": "uk_ai_cyber_code",
+  "name": "UK Cyber Security Code of Practice for AI",
+  "short_name": "UK AI Cyber Code",
+  "official_reference": "DSIT / NCSC Guidelines for Secure AI System Development",
+  "jurisdiction": "United Kingdom / International",
+  "type": "Code of Practice / Guidance",
+  "version": "1.0",
+  "publication_date": "2023-11-27",
+  "effective_date": "2023-11-27",
+  "official_url": "https://www.gov.uk/government/publications/ai-cyber-security-code-of-practice",
+  "status": "current",
+  "description": "UK Department for Science, Innovation and Technology (DSIT) and NCSC guidelines for developers, providers, and deployers of systems using AI, structured across Secure Design, Secure Development, Secure Deployment, and Secure Operation.",
+  "chapters": [
+    {
+      "chapter_id": "Four Principles",
+      "title": "Core Security Principles for AI",
+      "requirements": [
+        {
+          "id": "UK-AI-CODE-DESIGN",
+          "article": "Principle 1",
+          "title": "Secure Design \u2014 Raise AI Threat Awareness and Model Risks",
+          "normalized_requirement": "Understand AI-specific risks, establish AI system threat models, and assess trade-offs between model functionality, performance, and security posture.",
+          "applicability": "Organizations designing AI systems",
+          "effective_date": "2023-11-27",
+          "implementation_guidance": "Incorporate AI threat modeling into the design phase of all machine learning initiatives.",
+          "evidence_expected": [
+            "AI Threat Modeling Assessment",
+            "Security Design Review Documentation"
+          ],
+          "domain": "Secure Development",
+          "official_url": "https://www.ncsc.gov.uk/collection/guidelines-secure-ai-system-development"
+        },
+        {
+          "id": "UK-AI-CODE-DEPLOY",
+          "article": "Principle 3",
+          "title": "Secure Deployment \u2014 Protect Infrastructure and Secure Prompt Interfaces",
+          "normalized_requirement": "Protect deployment environments, secure external APIs, sanitize user inputs, and protect model weights and intellectual property from unauthorized extraction.",
+          "applicability": "Organizations deploying AI models",
+          "effective_date": "2023-11-27",
+          "implementation_guidance": "Enforce network isolation, API gateways, rate limiting, and output validation.",
+          "evidence_expected": [
+            "Deployment Hardening Benchmark",
+            "API Gateway Security Configuration"
+          ],
+          "domain": "Security & Robustness",
+          "official_url": "https://www.ncsc.gov.uk/collection/guidelines-secure-ai-system-development"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "id": "eu_cra",
+  "name": "EU Cyber Resilience Act",
+  "short_name": "EU CRA",
+  "official_reference": "Regulation (EU) 2024/2847",
+  "jurisdiction": "European Union",
+  "type": "Regulation / Law",
+  "version": "2024/2847",
+  "publication_date": "2024-11-20",
+  "effective_date": "2024-12-10",
+  "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847",
+  "status": "current",
+  "description": "Establishes mandatory cybersecurity requirements for products with digital elements placed on the EU market, including AI software components, secure development lifecycle, and continuous vulnerability management.",
+  "applicability_conditions": [
+    "Manufacturers and developers of software or hardware products with digital elements placed on the EU market"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "Annex I",
+      "title": "Essential Cybersecurity Requirements",
+      "requirements": [
+        {
+          "id": "CRA-ANNEX-1-SEC-DESIGN",
+          "article": "Annex I Part I (1)",
+          "title": "Security by Design and Default",
+          "normalized_requirement": "Products with digital elements, including AI applications, shall be designed, developed, and produced in such a way that they ensure an appropriate level of cybersecurity based on the risks, delivering products with secure default configurations.",
+          "applicability": "Commercial software and digital products in EU",
+          "effective_date": "2027-12-11",
+          "implementation_guidance": "Implement secure defaults, disable unnecessary ports and APIs, and enforce mandatory authentication.",
+          "evidence_expected": [
+            "Secure Default Configuration Baseline",
+            "Threat Modeling Documentation"
+          ],
+          "domain": "Secure Development",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847"
+        },
+        {
+          "id": "CRA-ANNEX-1-SBOM",
+          "article": "Annex I Part II (1)",
+          "title": "Software Bill of Materials (SBOM)",
+          "normalized_requirement": "Manufacturers shall identify and document components and vulnerabilities, including drawing up a Software Bill of Materials (SBOM) in a commonly used, machine-readable format covering at the very least top-level dependencies.",
+          "applicability": "All products with digital elements",
+          "effective_date": "2027-12-11",
+          "implementation_guidance": "Generate automated SBOMs (SPDX / CycloneDX) for all software builds and AI component containers.",
+          "evidence_expected": [
+            "Automated SBOM Generation Pipeline",
+            "Sample CycloneDX SBOM Export"
+          ],
+          "domain": "Supply Chain Security",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847"
+        },
+        {
+          "id": "CRA-ANNEX-1-VULN",
+          "article": "Annex I Part II (2)",
+          "title": "Vulnerability Handling and Disclosure",
+          "normalized_requirement": "Organizations shall put in place a coordinated vulnerability disclosure policy, perform regular security tests, and deploy security updates without delay.",
+          "applicability": "All products with digital elements",
+          "effective_date": "2026-09-11",
+          "implementation_guidance": "Establish a vulnerability disclosure policy and automated patch management workflow.",
+          "evidence_expected": [
+            "Coordinated Vulnerability Disclosure Policy",
+            "Security Patch SLA & SLA Metrics"
+          ],
+          "domain": "Vulnerability Management",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847"
+        }
+      ]
+    }
+  ]
+}

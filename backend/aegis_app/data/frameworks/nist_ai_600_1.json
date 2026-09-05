@@ -1,0 +1,85 @@
+{
+  "id": "nist_ai_600_1",
+  "name": "NIST Artificial Intelligence Risk Management Framework: Generative AI Profile",
+  "short_name": "NIST AI 600-1 (GenAI Profile)",
+  "official_reference": "NIST SP AI 600-1",
+  "jurisdiction": "United States / International",
+  "type": "Profile / Guidance",
+  "version": "1.0",
+  "publication_date": "2024-07-26",
+  "effective_date": "2024-07-26",
+  "official_url": "https://doi.org/10.6028/NIST.SP.AI.600-1",
+  "status": "current",
+  "description": "A cross-sectoral profile of the NIST AI RMF specifically addressing the unique risks, failure modes, and governance practices of Generative AI systems and foundation models.",
+  "applicability_conditions": [
+    "Organizations developing, integrating, or deploying Generative AI models, RAG pipelines, or LLMs"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "GENAI-RISKS",
+      "title": "Generative AI Risk Mitigations",
+      "requirements": [
+        {
+          "id": "NIST-600-CONFAB",
+          "article": "Action 1.1",
+          "title": "Confabulation and Hallucination Mitigation",
+          "normalized_requirement": "Organizations shall implement technical mechanisms such as Retrieval-Augmented Generation (RAG) grounding, fact-checking verifiers, and confidence thresholding to mitigate non-factual confabulations.",
+          "applicability": "Generative AI systems producing factual responses",
+          "effective_date": "2024-07-26",
+          "implementation_guidance": "Implement RAG with citations, source attribution, and truthfulness guardrails.",
+          "evidence_expected": [
+            "RAG Architecture Specification",
+            "Hallucination Benchmark Evaluation Report"
+          ],
+          "domain": "Accuracy & Robustness",
+          "official_url": "https://doi.org/10.6028/NIST.SP.AI.600-1"
+        },
+        {
+          "id": "NIST-600-CBRN",
+          "article": "Action 1.2",
+          "title": "Dangerous and Harmful Content Safeguards",
+          "normalized_requirement": "Protections shall be implemented to prevent GenAI outputs that facilitate dangerous activities (CBRN, cyberweapons, self-harm, hate speech) via system prompts, output guardrails, and automated red-teaming.",
+          "applicability": "All Generative AI deployments",
+          "effective_date": "2024-07-26",
+          "implementation_guidance": "Deploy input/output safety guardrails (e.g. Llama Guard, NeMo Guardrails) and maintain safety filtering rules.",
+          "evidence_expected": [
+            "Content Moderation Guardrail Architecture",
+            "Red-Teaming Safety Test Results"
+          ],
+          "domain": "Safety & Content",
+          "official_url": "https://doi.org/10.6028/NIST.SP.AI.600-1"
+        },
+        {
+          "id": "NIST-600-PROMPT-SEC",
+          "article": "Action 1.4",
+          "title": "Information Security & Prompt Injection Defense",
+          "normalized_requirement": "System prompts, context windows, and model interactions shall be protected against direct and indirect prompt injection, data leakage, and unauthorized tool invocation.",
+          "applicability": "All GenAI and agentic systems",
+          "effective_date": "2024-07-26",
+          "implementation_guidance": "Employ prompt isolation, input sanitization, output encoding, and tool-call permission controls.",
+          "evidence_expected": [
+            "Prompt Injection Defense Test Report",
+            "Input/Output Sanitization Config"
+          ],
+          "domain": "Prompt Security",
+          "official_url": "https://doi.org/10.6028/NIST.SP.AI.600-1"
+        },
+        {
+          "id": "NIST-600-PROVENANCE",
+          "article": "Action 1.7",
+          "title": "Synthetic Content Provenance and Transparency",
+          "normalized_requirement": "Mechanisms such as cryptographic watermarking, C2PA metadata, or user-facing disclosures shall be integrated into generative outputs to indicate synthetic provenance.",
+          "applicability": "Public or external-facing Generative AI systems",
+          "effective_date": "2024-07-26",
+          "implementation_guidance": "Integrate watermarking or explicit text/image disclaimers stating content was AI-generated.",
+          "evidence_expected": [
+            "Synthetic Provenance / Watermark Spec",
+            "User Interface AI Disclosure"
+          ],
+          "domain": "Transparency & Provenance",
+          "official_url": "https://doi.org/10.6028/NIST.SP.AI.600-1"
+        }
+      ]
+    }
+  ]
+}

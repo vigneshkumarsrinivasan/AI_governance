@@ -1,0 +1,97 @@
+{
+  "id": "nist_csf_2",
+  "name": "NIST Cybersecurity Framework 2.0",
+  "short_name": "NIST CSF 2.0",
+  "official_reference": "NIST CSWP 29",
+  "jurisdiction": "United States / International",
+  "type": "Standard",
+  "version": "2.0",
+  "publication_date": "2024-02-26",
+  "effective_date": "2024-02-26",
+  "official_url": "https://doi.org/10.6028/NIST.CSWP.29",
+  "status": "current",
+  "description": "Comprehensive cybersecurity guidance organizing cybersecurity activities into six core functions: Govern, Identify, Protect, Detect, Respond, and Recover.",
+  "applicability_conditions": [
+    "Organizations managing cybersecurity risk across IT, OT, and AI environments"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "GOVERN",
+      "title": "Govern (GV)",
+      "requirements": [
+        {
+          "id": "NIST-CSF-GV-OC-01",
+          "article": "GV.OC-01",
+          "title": "Organizational Context and Cybersecurity Strategy",
+          "normalized_requirement": "The organizational mission, objectives, stakeholders, and legal/regulatory requirements regarding cybersecurity are understood and inform cybersecurity roles and risk management decisions.",
+          "applicability": "Enterprise-wide",
+          "effective_date": "2024-02-26",
+          "implementation_guidance": "Integrate AI cybersecurity strategy into enterprise risk governance.",
+          "evidence_expected": [
+            "Cybersecurity Strategy Document",
+            "Board Risk Briefing"
+          ],
+          "domain": "AI Governance",
+          "official_url": "https://doi.org/10.6028/NIST.CSWP.29"
+        },
+        {
+          "id": "NIST-CSF-GV-SC-04",
+          "article": "GV.SC-04",
+          "title": "Suppliers and Third-Party Cybersecurity Management",
+          "normalized_requirement": "Suppliers and third-party partners are known, assessed, and prioritized based on the criticality of products and services provided.",
+          "applicability": "All third-party services and AI vendors",
+          "effective_date": "2024-02-26",
+          "implementation_guidance": "Conduct vendor security reviews for all third-party AI APIs and SaaS providers.",
+          "evidence_expected": [
+            "Third-Party AI Risk Assessment",
+            "Vendor SOC2 / ISO 27001 Review"
+          ],
+          "domain": "Supply Chain Security",
+          "official_url": "https://doi.org/10.6028/NIST.CSWP.29"
+        }
+      ]
+    },
+    {
+      "chapter_id": "PROTECT",
+      "title": "Protect (PR)",
+      "requirements": [
+        {
+          "id": "NIST-CSF-PR-AA-01",
+          "article": "PR.AA-01",
+          "title": "Identity and Access Management",
+          "normalized_requirement": "Identities and credentials for authorized users, services, models, and agents are managed, authenticated, and authorized in accordance with the principle of least privilege.",
+          "applicability": "All systems and AI agents",
+          "effective_date": "2024-02-26",
+          "implementation_guidance": "Implement MFA, role-based access control, and least-privilege token issuance for AI services.",
+          "evidence_expected": [
+            "IAM Policy & Matrix",
+            "MFA Enforcement Audit Log"
+          ],
+          "domain": "Identity & Access Management",
+          "official_url": "https://doi.org/10.6028/NIST.CSWP.29"
+        }
+      ]
+    },
+    {
+      "chapter_id": "RESPOND",
+      "title": "Respond (RS)",
+      "requirements": [
+        {
+          "id": "NIST-CSF-RS-MA-01",
+          "article": "RS.MA-01",
+          "title": "Incident Management Execution",
+          "normalized_requirement": "Incident response plans are executed in coordination with internal and external stakeholders when an incident is detected.",
+          "applicability": "All systems including AI assets",
+          "effective_date": "2024-02-26",
+          "implementation_guidance": "Incorporate AI-specific incident scenarios into the enterprise Incident Response Plan.",
+          "evidence_expected": [
+            "AI Incident Response Plan",
+            "Incident Post-Mortem Template"
+          ],
+          "domain": "Incident Management",
+          "official_url": "https://doi.org/10.6028/NIST.CSWP.29"
+        }
+      ]
+    }
+  ]
+}

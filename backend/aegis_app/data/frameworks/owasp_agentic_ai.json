@@ -1,0 +1,85 @@
+{
+  "id": "owasp_agentic_ai",
+  "name": "OWASP Agentic AI Security Guidance",
+  "short_name": "OWASP Agentic AI",
+  "official_reference": "OWASP Agentic Security Project",
+  "jurisdiction": "International",
+  "type": "Security Guidance",
+  "version": "1.0",
+  "publication_date": "2024-12-01",
+  "effective_date": "2024-12-01",
+  "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+  "status": "current",
+  "description": "Security guidance addressing the emerging attack surface of autonomous AI agents, multi-agent systems, tool-calling capabilities, execution environments, and autonomous decision-making.",
+  "applicability_conditions": [
+    "AI systems featuring autonomous agents, multi-agent communication, tool execution, or dynamic planning"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "Agentic Security Risks",
+      "title": "Core Agentic Risks",
+      "requirements": [
+        {
+          "id": "OWASP-AGT-01",
+          "article": "AGENT-01",
+          "title": "Agent Privilege Escalation and Authorization Boundary Failure",
+          "normalized_requirement": "AI agents shall be assigned scoped, short-lived credentials and operate within defined role-based boundaries, preventing agents from acquiring unauthorized access across systems or tenants.",
+          "applicability": "Autonomous agents accessing APIs or infrastructure",
+          "effective_date": "2024-12-01",
+          "implementation_guidance": "Grant ephemeral tokens per tool call and sandbox agent identity within tenant boundaries.",
+          "evidence_expected": [
+            "Agent Token & IAM Configuration",
+            "Agent Boundary Penetration Test"
+          ],
+          "domain": "Agent Security",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "id": "OWASP-AGT-02",
+          "article": "AGENT-02",
+          "title": "Insecure Tool Execution and Tool Poisoning",
+          "normalized_requirement": "Tools and APIs invoked by agents shall validate all parameters independently, prevent command injection, and verify tool definitions against tampering or supply-chain poisoning.",
+          "applicability": "Agents invoking external tools or APIs",
+          "effective_date": "2024-12-01",
+          "implementation_guidance": "Perform server-side validation of all agent-generated function arguments and restrict dangerous system commands.",
+          "evidence_expected": [
+            "Tool Schema Validation Code",
+            "Tool Invocation Audit Log"
+          ],
+          "domain": "Agent Security",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "id": "OWASP-AGT-03",
+          "article": "AGENT-03",
+          "title": "Memory and Context Poisoning",
+          "normalized_requirement": "Agent long-term memory and scratchpad contexts shall be isolated, validated, and sanitized to prevent indirect manipulation through injected memories or malicious retrieval.",
+          "applicability": "Agents with persistent memory or vector store state",
+          "effective_date": "2024-12-01",
+          "implementation_guidance": "Authenticate memory updates and prevent unauthenticated write access to agent memory stores.",
+          "evidence_expected": [
+            "Agent Memory Access Control Spec",
+            "Memory Poisoning Test Case"
+          ],
+          "domain": "Agent Security",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "id": "OWASP-AGT-07",
+          "article": "AGENT-07",
+          "title": "Human Oversight and Emergency Kill-Switch for Autonomous Agents",
+          "normalized_requirement": "Every autonomous agent capable of executing actions in production or external systems shall possess an instantaneous, immutable kill-switch and require explicit human approval for high-risk actions.",
+          "applicability": "All autonomous agents",
+          "effective_date": "2024-12-01",
+          "implementation_guidance": "Build an administrative kill switch that immediately revokes agent tokens and halts active workflows.",
+          "evidence_expected": [
+            "Kill-Switch Architecture & Test Evidence",
+            "Approval Workflow Runbook"
+          ],
+          "domain": "Human Oversight",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ]
+    }
+  ]
+}

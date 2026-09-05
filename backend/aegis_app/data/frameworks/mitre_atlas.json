@@ -1,0 +1,67 @@
+{
+  "id": "mitre_atlas",
+  "name": "MITRE ATLAS (Adversarial Threat Landscape for AI Systems)",
+  "short_name": "MITRE ATLAS",
+  "official_reference": "ATLAS Matrix v4.0",
+  "jurisdiction": "International",
+  "type": "Threat Framework",
+  "version": "4.0",
+  "publication_date": "2024-03-15",
+  "effective_date": "2024-03-15",
+  "official_url": "https://atlas.mitre.org/",
+  "status": "current",
+  "description": "Globally recognized knowledge base of adversary tactics, techniques, and case studies against artificial intelligence and machine learning systems based on real-world observations.",
+  "chapters": [
+    {
+      "chapter_id": "Tactics & Techniques",
+      "title": "MITRE ATLAS Core Tactics",
+      "requirements": [
+        {
+          "id": "ATLAS-AML-T0051",
+          "article": "AML.T0051",
+          "title": "LLM Prompt Injection Defense",
+          "normalized_requirement": "Adversaries craft prompts to manipulate the target LLM into executing unintended behaviors. The organization shall deploy layered prompt firewalls, semantic classifiers, and least-privilege tool execution.",
+          "applicability": "All LLM and agentic deployments",
+          "effective_date": "2024-03-15",
+          "implementation_guidance": "Implement semantic prompt filters and isolate untrusted input context from system directives.",
+          "evidence_expected": [
+            "ATLAS AML.T0051 Threat Mitigation Review",
+            "Guardrail Configuration Export"
+          ],
+          "domain": "Prompt Security",
+          "official_url": "https://atlas.mitre.org/techniques/AML.T0051/"
+        },
+        {
+          "id": "ATLAS-AML-T0043",
+          "article": "AML.T0043",
+          "title": "Adversarial Attack on Machine Learning (Evasion)",
+          "normalized_requirement": "Adversaries craft inputs designed to cause an ML model to produce incorrect predictions. The organization shall conduct adversarial robustness testing, gradient masking, and input perturbation defenses.",
+          "applicability": "Computer vision, NLP, and predictive classifiers",
+          "effective_date": "2024-03-15",
+          "implementation_guidance": "Perform adversarial perturbation benchmarking and monitor confidence distribution shifts in production.",
+          "evidence_expected": [
+            "Adversarial Robustness Evaluation Report",
+            "Model Drift & Anomaly Monitoring Dashboard"
+          ],
+          "domain": "Model Security",
+          "official_url": "https://atlas.mitre.org/techniques/AML.T0043/"
+        },
+        {
+          "id": "ATLAS-AML-T0024",
+          "article": "AML.T0024",
+          "title": "LLM Inversion and Training Data Extraction",
+          "normalized_requirement": "Adversaries extract sensitive or proprietary training data by querying the model. The organization shall implement differential privacy, output entropy monitoring, and restrict model memorization.",
+          "applicability": "Fine-tuned models and proprietary foundation models",
+          "effective_date": "2024-03-15",
+          "implementation_guidance": "Evaluate model memorization ratios and filter outputs containing high n-gram matches with private corpora.",
+          "evidence_expected": [
+            "Training Data Memorization Audit",
+            "Differential Privacy Verification"
+          ],
+          "domain": "Model Security & Privacy",
+          "official_url": "https://atlas.mitre.org/techniques/AML.T0024/"
+        }
+      ]
+    }
+  ]
+}

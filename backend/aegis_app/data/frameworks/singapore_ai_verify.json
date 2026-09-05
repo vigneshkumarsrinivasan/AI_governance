@@ -1,0 +1,52 @@
+{
+  "id": "singapore_ai_verify",
+  "name": "Singapore AI Verify Framework",
+  "short_name": "Singapore AI Verify",
+  "official_reference": "IMDA & AI Verify Foundation Testing Framework",
+  "jurisdiction": "Singapore / International",
+  "type": "Testing & Governance Framework",
+  "version": "1.0",
+  "publication_date": "2022-05-25",
+  "effective_date": "2022-05-25",
+  "official_url": "https://aiverifyfoundation.sg/",
+  "status": "current",
+  "description": "Developed by the Infocomm Media Development Authority (IMDA) and the AI Verify Foundation to validate AI system performance against 11 internationally recognized governance principles through process checks and technical metrics.",
+  "chapters": [
+    {
+      "chapter_id": "11 Principles",
+      "title": "AI Verify Core Governance Principles",
+      "requirements": [
+        {
+          "id": "SG-AIV-PRIN-01",
+          "article": "Principle 1",
+          "title": "Transparency and System Explainability",
+          "normalized_requirement": "Organizations shall disclose system capabilities and limitations, providing explainable rationale for AI-assisted outcomes to stakeholders and end-users.",
+          "applicability": "All AI systems",
+          "effective_date": "2022-05-25",
+          "implementation_guidance": "Implement explainability tools (SHAP, LIME, counterfactuals) and publish user-friendly explanations.",
+          "evidence_expected": [
+            "AI System Explainability Assessment",
+            "Model Card Transparency Artifact"
+          ],
+          "domain": "Transparency",
+          "official_url": "https://aiverifyfoundation.sg/"
+        },
+        {
+          "id": "SG-AIV-PRIN-07",
+          "article": "Principle 7",
+          "title": "Fairness and Avoidance of Unintended Bias",
+          "normalized_requirement": "AI systems shall be evaluated for algorithmic fairness across protected demographic groups, using statistical parity and disparate impact metrics to prevent discriminatory outcomes.",
+          "applicability": "AI systems evaluating individuals",
+          "effective_date": "2022-05-25",
+          "implementation_guidance": "Run statistical bias evaluation tests across demographic slices and document fairness thresholds.",
+          "evidence_expected": [
+            "Algorithmic Fairness Audit Report",
+            "Disparate Impact Benchmark Log"
+          ],
+          "domain": "Fairness & Bias",
+          "official_url": "https://aiverifyfoundation.sg/"
+        }
+      ]
+    }
+  ]
+}

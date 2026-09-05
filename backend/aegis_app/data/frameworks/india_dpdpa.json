@@ -1,0 +1,52 @@
+{
+  "id": "india_dpdpa",
+  "name": "Digital Personal Data Protection Act, 2023 (India)",
+  "short_name": "India DPDPA 2023",
+  "official_reference": "Act No. 22 of 2023",
+  "jurisdiction": "India",
+  "type": "Act / Law",
+  "version": "2023 Act",
+  "publication_date": "2023-08-11",
+  "effective_date": "2023-08-11",
+  "official_url": "https://www.meity.gov.in/content/digital-personal-data-protection-act-2023",
+  "status": "current",
+  "description": "Legislation governing the processing of digital personal data in India, establishing requirements for consent, Data Fiduciary obligations, security safeguards, and rights of Data Principals.",
+  "chapters": [
+    {
+      "chapter_id": "Chapter II",
+      "title": "Obligations of Data Fiduciary",
+      "requirements": [
+        {
+          "id": "IND-DPDPA-SEC-08",
+          "article": "Section 8",
+          "title": "General Obligations of Data Fiduciary and Reasonable Security Safeguards",
+          "normalized_requirement": "A Data Fiduciary shall protect personal data in its possession or under its control by taking reasonable security safeguards to prevent personal data breach, and notify the Data Protection Board and affected Data Principals in the event of a breach.",
+          "applicability": "AI systems processing personal data of individuals in India",
+          "effective_date": "2023-08-11",
+          "implementation_guidance": "Implement encryption, strict access controls, and rapid breach notification workflows.",
+          "evidence_expected": [
+            "Reasonable Security Safeguards Policy",
+            "Data Breach Notification SOP"
+          ],
+          "domain": "Privacy & Data Protection",
+          "official_url": "https://www.meity.gov.in/content/digital-personal-data-protection-act-2023"
+        },
+        {
+          "id": "IND-DPDPA-SEC-09",
+          "article": "Section 9",
+          "title": "Processing of Personal Data of Children",
+          "normalized_requirement": "A Data Fiduciary shall obtain verifiable consent of the parent before processing personal data of a child, and shall not undertake processing that is likely to cause harm to a child, nor undertake tracking or behavioral monitoring.",
+          "applicability": "AI systems used by or directed at children in India",
+          "effective_date": "2023-08-11",
+          "implementation_guidance": "Disable behavioral profiling, automated advertising, and tracking on accounts identified as minors.",
+          "evidence_expected": [
+            "Child Data Protection Protocol",
+            "Age Verification & Parental Consent Mechanism"
+          ],
+          "domain": "Privacy & Data Protection",
+          "official_url": "https://www.meity.gov.in/content/digital-personal-data-protection-act-2023"
+        }
+      ]
+    }
+  ]
+}

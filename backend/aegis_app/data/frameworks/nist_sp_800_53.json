@@ -1,0 +1,52 @@
+{
+  "id": "nist_sp_800_53",
+  "name": "NIST SP 800-53 Rev. 5: Security and Privacy Controls for Information Systems",
+  "short_name": "NIST SP 800-53 Rev 5",
+  "official_reference": "NIST SP 800-53 Rev. 5",
+  "jurisdiction": "United States / Federal & Enterprise",
+  "type": "Standard",
+  "version": "Rev. 5",
+  "publication_date": "2020-09-23",
+  "effective_date": "2020-09-23",
+  "official_url": "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final",
+  "status": "current",
+  "description": "Comprehensive catalog of security and privacy controls for federal information systems and organizations, protecting against malicious attacks, human error, and natural disasters.",
+  "chapters": [
+    {
+      "chapter_id": "Control Families",
+      "title": "Selected Controls for AI Systems",
+      "requirements": [
+        {
+          "id": "NIST-800-53-SI-04",
+          "article": "SI-4",
+          "title": "System Monitoring and Anomaly Detection",
+          "normalized_requirement": "The organization monitors the system to detect attacks, anomalous behaviors, unauthorized connections, and model performance degradations.",
+          "applicability": "All information systems and AI applications",
+          "effective_date": "2020-09-23",
+          "implementation_guidance": "Deploy automated SIEM integration and telemetry monitoring for AI API endpoints.",
+          "evidence_expected": [
+            "System Monitoring Architecture",
+            "SIEM Telemetry Logs"
+          ],
+          "domain": "Logging & Monitoring",
+          "official_url": "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final"
+        },
+        {
+          "id": "NIST-800-53-AU-02",
+          "article": "AU-2",
+          "title": "Event Logging and Audit Generation",
+          "normalized_requirement": "The organization identifies types of events to be logged and configures the system to generate audit records containing timestamps, source and destination addresses, user identities, and event outcomes.",
+          "applicability": "All systems",
+          "effective_date": "2020-09-23",
+          "implementation_guidance": "Log all administrative actions, AI model queries, and policy enforcement decisions.",
+          "evidence_expected": [
+            "Audit Logging Specification",
+            "Audit Trail Sample Export"
+          ],
+          "domain": "Logging & Monitoring",
+          "official_url": "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final"
+        }
+      ]
+    }
+  ]
+}

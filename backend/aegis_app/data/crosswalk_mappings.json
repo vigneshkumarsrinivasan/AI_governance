@@ -1,0 +1,623 @@
+[
+  {
+    "control_id": "UC-AI-GOV-001",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-09",
+        "confidence": "Strong",
+        "rationale": "Establishes institutional governance foundation required for continuous risk management under Art. 9."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-GOV-1.1",
+        "confidence": "Exact",
+        "rationale": "Directly implements GOVERN 1.1 mandate for policies integrating AI legal and risk requirements."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-GOV-5.1",
+        "confidence": "Strong",
+        "rationale": "Supports operationalizing AI risk management policies and processes across lifecycle."
+      },
+      {
+        "framework_id": "nist_csf_2",
+        "requirement_id": "NIST-CSF-GV-OC-01",
+        "confidence": "Strong",
+        "rationale": "Maps to CSF 2.0 organizational context and cybersecurity governance strategy."
+      },
+      {
+        "framework_id": "singapore_ai_verify",
+        "requirement_id": "SG-AIV-PRIN-01",
+        "confidence": "Partial",
+        "rationale": "Provides governance framework ensuring organizational accountability and transparency."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-GOV-002",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-14",
+        "confidence": "Strong",
+        "rationale": "Ensures designated natural persons possess assigned oversight responsibility under Art. 14."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-GOV-2.1",
+        "confidence": "Exact",
+        "rationale": "Directly satisfies GOVERN 2.1 requirement to define and allocate AI risk management roles."
+      },
+      {
+        "framework_id": "dora",
+        "requirement_id": "DORA-ART-06-ICT-RISK",
+        "confidence": "Partial",
+        "rationale": "Supports governance accountability under financial ICT risk framework."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-INV-001",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-11",
+        "confidence": "Strong",
+        "rationale": "Maintains central technical documentation and inventory required for Annex IV compliance."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-MAP-1.1",
+        "confidence": "Exact",
+        "rationale": "Satisfies MAP 1.1 requirement to document intended purpose, context, and operational environment."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-MAP-2.1",
+        "confidence": "Exact",
+        "rationale": "Maps AI system components, algorithms, and dependencies as required by MAP 2.1."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-INV-002",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-05",
+        "confidence": "Exact",
+        "rationale": "Directly implements pre-deployment screening to prevent deployment of banned practices under Art. 5."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-GOV-1.2",
+        "confidence": "Strong",
+        "rationale": "Ensures trustworthy AI principles eliminate unacceptable risk profiles."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-RSK-001",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-09",
+        "confidence": "Exact",
+        "rationale": "Fulfills continuous lifecycle risk management requirement of Article 9."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-GOV-5.1",
+        "confidence": "Strong",
+        "rationale": "Operationalizes standard AI risk assessment procedures."
+      },
+      {
+        "framework_id": "dora",
+        "requirement_id": "DORA-ART-06-ICT-RISK",
+        "confidence": "Strong",
+        "rationale": "Provides AI-specific component of DORA ICT risk management framework."
+      },
+      {
+        "framework_id": "nis2",
+        "requirement_id": "NIS2-ART-21-SEC-MEASURES",
+        "confidence": "Partial",
+        "rationale": "Addresses risk assessment requirement under NIS2 risk-management measures."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-SEC-001",
+    "mappings": [
+      {
+        "framework_id": "owasp_llm",
+        "requirement_id": "OWASP-LLM-01",
+        "confidence": "Exact",
+        "rationale": "Directly mitigates OWASP Top 10 LLM01 Prompt Injection vulnerability."
+      },
+      {
+        "framework_id": "mitre_atlas",
+        "requirement_id": "ATLAS-AML-T0051",
+        "confidence": "Exact",
+        "rationale": "Mitigates MITRE ATLAS AML.T0051 prompt injection adversarial technique."
+      },
+      {
+        "framework_id": "nist_ai_600_1",
+        "requirement_id": "NIST-600-PROMPT-SEC",
+        "confidence": "Exact",
+        "rationale": "Implements NIST GenAI Profile Action 1.4 for prompt injection defense."
+      },
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-15",
+        "confidence": "Strong",
+        "rationale": "Implements cybersecurity resilience against adversarial manipulation required by Art. 15."
+      },
+      {
+        "framework_id": "uk_ai_cyber_code",
+        "requirement_id": "UK-AI-CODE-DEPLOY",
+        "confidence": "Strong",
+        "rationale": "Satisfies UK code principle 3 requirement to secure prompt interfaces."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-SEC-002",
+    "mappings": [
+      {
+        "framework_id": "owasp_llm",
+        "requirement_id": "OWASP-LLM-04",
+        "confidence": "Exact",
+        "rationale": "Directly prevents OWASP LLM04 Data and Model Poisoning."
+      },
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-10",
+        "confidence": "Strong",
+        "rationale": "Ensures training data integrity and governance under Art. 10."
+      },
+      {
+        "framework_id": "nist_sp_800_218",
+        "requirement_id": "NIST-SSDF-PW-4.1",
+        "confidence": "Strong",
+        "rationale": "Satisfies SSDF practice to verify third-party AI components and weights."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-SEC-003",
+    "mappings": [
+      {
+        "framework_id": "owasp_llm",
+        "requirement_id": "OWASP-LLM-05",
+        "confidence": "Exact",
+        "rationale": "Directly implements mitigations for OWASP LLM05 Improper Output Handling."
+      },
+      {
+        "framework_id": "eu_cra",
+        "requirement_id": "CRA-ANNEX-1-SEC-DESIGN",
+        "confidence": "Strong",
+        "rationale": "Implements secure-by-design input/output handling under EU CRA Annex I."
+      },
+      {
+        "framework_id": "nist_csf_2",
+        "requirement_id": "NIST-CSF-PR-AA-01",
+        "confidence": "Partial",
+        "rationale": "Protects system components from unauthorized code execution via untrusted output."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-AGT-001",
+    "mappings": [
+      {
+        "framework_id": "owasp_agentic_ai",
+        "requirement_id": "OWASP-AGT-01",
+        "confidence": "Exact",
+        "rationale": "Directly mitigates AGENT-01 Agent Privilege Escalation."
+      },
+      {
+        "framework_id": "owasp_agentic_ai",
+        "requirement_id": "OWASP-AGT-02",
+        "confidence": "Strong",
+        "rationale": "Restricts tool execution parameters to prevent tool poisoning."
+      },
+      {
+        "framework_id": "owasp_llm",
+        "requirement_id": "OWASP-LLM-06",
+        "confidence": "Exact",
+        "rationale": "Mitigates LLM06 Excessive Agency by constraining tool permissions."
+      },
+      {
+        "framework_id": "nist_csf_2",
+        "requirement_id": "NIST-CSF-PR-AA-01",
+        "confidence": "Strong",
+        "rationale": "Implements least-privilege identity and access management for automated agents."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-AGT-002",
+    "mappings": [
+      {
+        "framework_id": "owasp_agentic_ai",
+        "requirement_id": "OWASP-AGT-07",
+        "confidence": "Exact",
+        "rationale": "Directly implements AGENT-07 mandatory emergency kill-switch requirement."
+      },
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-14",
+        "confidence": "Exact",
+        "rationale": "Provides the technical ability to interrupt or stop the system required by Art. 14(4)(e)."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-MAN-2.4",
+        "confidence": "Exact",
+        "rationale": "Implements MANAGE 2.4 mechanism for human override and safe shutdown."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-AGT-003",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-14",
+        "confidence": "Exact",
+        "rationale": "Fulfills human-in-the-loop oversight requirement for high-impact decisions."
+      },
+      {
+        "framework_id": "gdpr_ai",
+        "requirement_id": "GDPR-ART-22",
+        "confidence": "Strong",
+        "rationale": "Prevents solely automated decision-making producing legal effects without human intervention."
+      },
+      {
+        "framework_id": "owasp_agentic_ai",
+        "requirement_id": "OWASP-AGT-07",
+        "confidence": "Strong",
+        "rationale": "Enforces human confirmation gates prior to sensitive agent actions."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-DAT-001",
+    "mappings": [
+      {
+        "framework_id": "gdpr_ai",
+        "requirement_id": "GDPR-ART-25",
+        "confidence": "Exact",
+        "rationale": "Directly enforces data protection by design and data minimisation under Article 25."
+      },
+      {
+        "framework_id": "india_dpdpa",
+        "requirement_id": "IND-DPDPA-SEC-08",
+        "confidence": "Strong",
+        "rationale": "Implements reasonable security safeguards to protect digital personal data under Section 8."
+      },
+      {
+        "framework_id": "owasp_llm",
+        "requirement_id": "OWASP-LLM-02",
+        "confidence": "Exact",
+        "rationale": "Mitigates LLM02 Sensitive Information Disclosure."
+      },
+      {
+        "framework_id": "mitre_atlas",
+        "requirement_id": "ATLAS-AML-T0024",
+        "confidence": "Strong",
+        "rationale": "Prevents extraction of memorized sensitive data."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-DAT-002",
+    "mappings": [
+      {
+        "framework_id": "gdpr_ai",
+        "requirement_id": "GDPR-ART-35",
+        "confidence": "Exact",
+        "rationale": "Directly fulfills Article 35 mandate to conduct Data Protection Impact Assessments for AI."
+      },
+      {
+        "framework_id": "india_dpdpa",
+        "requirement_id": "IND-DPDPA-SEC-08",
+        "confidence": "Partial",
+        "rationale": "Supports evaluating risks to personal data as required for Significant Data Fiduciaries."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-TRN-001",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-50",
+        "confidence": "Exact",
+        "rationale": "Fulfills Art. 50(1) obligation to inform individuals that they are interacting with an AI system."
+      },
+      {
+        "framework_id": "singapore_ai_verify",
+        "requirement_id": "SG-AIV-PRIN-01",
+        "confidence": "Strong",
+        "rationale": "Satisfies Principle 1 transparency mandate for clear user disclosures."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-TRN-002",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-50",
+        "confidence": "Exact",
+        "rationale": "Implements Art. 50(2) machine-readable watermarking for artificially generated content."
+      },
+      {
+        "framework_id": "nist_ai_600_1",
+        "requirement_id": "NIST-600-PROVENANCE",
+        "confidence": "Exact",
+        "rationale": "Fulfills GenAI Profile Action 1.7 for synthetic content watermarking and provenance."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-LOG-001",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-12",
+        "confidence": "Exact",
+        "rationale": "Directly satisfies Article 12 automatic recording of events over AI lifetime."
+      },
+      {
+        "framework_id": "nist_sp_800_53",
+        "requirement_id": "NIST-800-53-AU-02",
+        "confidence": "Exact",
+        "rationale": "Implements AU-2 event logging and audit record generation."
+      },
+      {
+        "framework_id": "nist_sp_800_53",
+        "requirement_id": "NIST-800-53-SI-04",
+        "confidence": "Strong",
+        "rationale": "Enables continuous system monitoring under SI-4."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-INC-001",
+    "mappings": [
+      {
+        "framework_id": "nist_csf_2",
+        "requirement_id": "NIST-CSF-RS-MA-01",
+        "confidence": "Exact",
+        "rationale": "Executes incident response plan under CSF 2.0 Respond function."
+      },
+      {
+        "framework_id": "nis2",
+        "requirement_id": "NIS2-ART-23-REPORTING",
+        "confidence": "Strong",
+        "rationale": "Enables 24h/72h notification compliance for significant incidents."
+      },
+      {
+        "framework_id": "dora",
+        "requirement_id": "DORA-ART-06-ICT-RISK",
+        "confidence": "Strong",
+        "rationale": "Complies with financial ICT-related incident management obligations."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-SC-001",
+    "mappings": [
+      {
+        "framework_id": "dora",
+        "requirement_id": "DORA-ART-28-THIRD-PARTY",
+        "confidence": "Exact",
+        "rationale": "Directly manages ICT third-party AI/cloud risk under DORA Art. 28."
+      },
+      {
+        "framework_id": "nist_sp_800_161",
+        "requirement_id": "NIST-161-SR-03",
+        "confidence": "Exact",
+        "rationale": "Implements SR-3 supply chain controls for critical AI providers."
+      },
+      {
+        "framework_id": "nist_csf_2",
+        "requirement_id": "NIST-CSF-GV-SC-04",
+        "confidence": "Strong",
+        "rationale": "Assesses and prioritizes third-party partners based on service criticality."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-SC-002",
+    "mappings": [
+      {
+        "framework_id": "eu_cra",
+        "requirement_id": "CRA-ANNEX-1-SBOM",
+        "confidence": "Exact",
+        "rationale": "Directly fulfills EU CRA mandatory Software Bill of Materials (SBOM) requirement."
+      },
+      {
+        "framework_id": "nist_sp_800_218",
+        "requirement_id": "NIST-SSDF-PW-4.1",
+        "confidence": "Strong",
+        "rationale": "Documents provenance of all reused software and AI components."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-TST-001",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-15",
+        "confidence": "Strong",
+        "rationale": "Verifies accuracy, robustness, and resilience against adversarial attacks."
+      },
+      {
+        "framework_id": "nist_ai_600_1",
+        "requirement_id": "NIST-600-CBRN",
+        "confidence": "Strong",
+        "rationale": "Tests dangerous content safeguards and jailbreak resistance."
+      },
+      {
+        "framework_id": "uk_ai_cyber_code",
+        "requirement_id": "UK-AI-CODE-DESIGN",
+        "confidence": "Strong",
+        "rationale": "Validates threat model against simulated adversarial tactics."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-TST-002",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-10",
+        "confidence": "Exact",
+        "rationale": "Directly satisfies Art. 10(2)(f) examination for possible biases that may affect health, safety, or fundamental rights."
+      },
+      {
+        "framework_id": "singapore_ai_verify",
+        "requirement_id": "SG-AIV-PRIN-07",
+        "confidence": "Exact",
+        "rationale": "Directly satisfies AI Verify Principle 7 for algorithmic fairness and avoidance of unintended bias."
+      },
+      {
+        "framework_id": "nist_ai_rmf",
+        "requirement_id": "NIST-RMF-MEA-2.1",
+        "confidence": "Strong",
+        "rationale": "Measures fairness and bias through standardized TEVV processes."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-ACC-001",
+    "mappings": [
+      {
+        "framework_id": "nist_ai_600_1",
+        "requirement_id": "NIST-600-CONFAB",
+        "confidence": "Exact",
+        "rationale": "Directly implements Action 1.1 confabulation and hallucination mitigation."
+      },
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-15",
+        "confidence": "Strong",
+        "rationale": "Satisfies Article 15 accuracy and robustness requirement."
+      },
+      {
+        "framework_id": "singapore_ai_verify",
+        "requirement_id": "SG-AIV-PRIN-01",
+        "confidence": "Strong",
+        "rationale": "Provides explainable factual citations supporting transparency."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-AGT-004",
+    "mappings": [
+      {
+        "framework_id": "owasp_agentic_ai",
+        "requirement_id": "OWASP-AGT-03",
+        "confidence": "Exact",
+        "rationale": "Mitigates AGENT-03 Memory and Context Manipulation / Poisoning."
+      },
+      {
+        "framework_id": "gdpr_ai",
+        "requirement_id": "GDPR-ART-25",
+        "confidence": "Strong",
+        "rationale": "Enforces tenant privacy isolation in persistent memory stores."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-AGT-005",
+    "mappings": [
+      {
+        "framework_id": "owasp_agentic_ai",
+        "requirement_id": "OWASP-AGT-02",
+        "confidence": "Strong",
+        "rationale": "Prevents unauthorized tool poisoning and command injection."
+      },
+      {
+        "framework_id": "nist_csf_2",
+        "requirement_id": "NIST-CSF-PR-AA-01",
+        "confidence": "Strong",
+        "rationale": "Protects host environments by isolating agent execution permissions."
+      },
+      {
+        "framework_id": "uk_ai_cyber_code",
+        "requirement_id": "UK-AI-CODE-DEPLOY",
+        "confidence": "Strong",
+        "rationale": "Secures execution infrastructure against rogue agent processes."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-VUL-001",
+    "mappings": [
+      {
+        "framework_id": "eu_cra",
+        "requirement_id": "CRA-ANNEX-1-VULN",
+        "confidence": "Exact",
+        "rationale": "Fulfills EU CRA mandatory vulnerability handling and patch deployment."
+      },
+      {
+        "framework_id": "nis2",
+        "requirement_id": "NIS2-ART-21-SEC-MEASURES",
+        "confidence": "Strong",
+        "rationale": "Implements vulnerability handling required under NIS2 Article 21."
+      },
+      {
+        "framework_id": "nist_sp_800_53",
+        "requirement_id": "NIST-800-53-SI-04",
+        "confidence": "Strong",
+        "rationale": "Provides continuous detection of vulnerabilities."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-VND-001",
+    "mappings": [
+      {
+        "framework_id": "eu_ai_act",
+        "requirement_id": "EU-AIA-ART-53",
+        "confidence": "Strong",
+        "rationale": "Aligns with copyright policy and downstream data control requirements."
+      },
+      {
+        "framework_id": "gdpr_ai",
+        "requirement_id": "GDPR-ART-25",
+        "confidence": "Strong",
+        "rationale": "Prevents secondary processing of personal data for unauthorized model training."
+      },
+      {
+        "framework_id": "dora",
+        "requirement_id": "DORA-ART-28-THIRD-PARTY",
+        "confidence": "Strong",
+        "rationale": "Controls proprietary financial data exposure to third-party ICT providers."
+      }
+    ]
+  },
+  {
+    "control_id": "UC-AI-RES-001",
+    "mappings": [
+      {
+        "framework_id": "dora",
+        "requirement_id": "DORA-ART-06-ICT-RISK",
+        "confidence": "Exact",
+        "rationale": "Fulfills DORA ICT business continuity and disaster recovery requirements for AI."
+      },
+      {
+        "framework_id": "nis2",
+        "requirement_id": "NIS2-ART-21-SEC-MEASURES",
+        "confidence": "Strong",
+        "rationale": "Implements business continuity and crisis management under NIS2."
+      }
+    ]
+  }
+]

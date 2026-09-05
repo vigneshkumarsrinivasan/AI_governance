@@ -1,0 +1,205 @@
+{
+  "id": "eu_ai_act",
+  "name": "EU Artificial Intelligence Act",
+  "short_name": "EU AI Act",
+  "official_reference": "Regulation (EU) 2024/1689",
+  "jurisdiction": "European Union",
+  "type": "Regulation / Law",
+  "version": "2024/1689 Final",
+  "publication_date": "2024-07-12",
+  "effective_date": "2024-08-01",
+  "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+  "status": "current",
+  "description": "Harmonised rules on artificial intelligence across the EU internal market, establishing a risk-based classification framework with strict obligations for high-risk AI systems and transparency requirements.",
+  "applicability_conditions": [
+    "Providers placing AI systems on the EU market or putting them into service in the EU",
+    "Deployers of AI systems that have their place of establishment or are located within the EU",
+    "Providers and deployers of AI systems located in a third country where the output produced by the AI system is used in the EU"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "Chapter II",
+      "title": "Prohibited Artificial Intelligence Practices",
+      "requirements": [
+        {
+          "id": "EU-AIA-ART-05",
+          "article": "Article 5",
+          "title": "Prohibition of Unacceptable-Risk AI Practices",
+          "normalized_requirement": "The organization shall screen all AI systems to ensure they do not deploy subliminal distortion, exploit vulnerabilities of specific groups, conduct social scoring, engage in individual predictive policing, compile untargeted facial recognition databases, infer emotions in workplace/education (except medical/safety), or employ real-time remote biometric identification in public spaces for law enforcement except strictly permitted.",
+          "applicability": "All AI systems in scope of EU AI Act",
+          "effective_date": "2025-02-02",
+          "implementation_guidance": "Implement mandatory intake screening checkpoint verifying that no AI system performs prohibited practices before architectural approval.",
+          "evidence_expected": [
+            "Prohibited AI Practice Screening Checklist",
+            "AI System Intake Assessment",
+            "Legal Review Signoff"
+          ],
+          "domain": "AI Governance & Ethics",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e1887-1-1"
+        }
+      ]
+    },
+    {
+      "chapter_id": "Chapter III",
+      "title": "High-Risk AI Systems \u2014 Requirements for Providers",
+      "requirements": [
+        {
+          "id": "EU-AIA-ART-09",
+          "article": "Article 9",
+          "title": "Risk Management System",
+          "normalized_requirement": "A continuous, iterative risk management system shall be established, implemented, documented and maintained throughout the entire lifecycle of high-risk AI systems, identifying known and foreseeable risks and adopting suitable mitigation measures.",
+          "applicability": "High-risk AI systems (Annex III / safety component Annex I)",
+          "effective_date": "2026-08-02",
+          "implementation_guidance": "Document a lifecycle risk management procedure specific to AI, conduct pre-deployment risk evaluations, and track residual risks.",
+          "evidence_expected": [
+            "AI Risk Management Policy",
+            "AI System Risk Assessment Report",
+            "Residual Risk Register"
+          ],
+          "domain": "Risk Management",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e2172-1-1"
+        },
+        {
+          "id": "EU-AIA-ART-10",
+          "article": "Article 10",
+          "title": "Data and Data Governance",
+          "normalized_requirement": "High-risk AI systems which make use of techniques involving the training of models with data shall be developed on the basis of training, validation and testing data sets that meet quality criteria, including bias examination and appropriate data provenance.",
+          "applicability": "High-risk AI systems using model training",
+          "effective_date": "2026-08-02",
+          "implementation_guidance": "Maintain data governance protocols, document data provenance, evaluate statistical bias, and audit dataset quality.",
+          "evidence_expected": [
+            "Data Governance Specification",
+            "Dataset Bias Evaluation Report",
+            "Data Lineage & Provenance Documentation"
+          ],
+          "domain": "Data Governance",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e2275-1-1"
+        },
+        {
+          "id": "EU-AIA-ART-11",
+          "article": "Article 11",
+          "title": "Technical Documentation",
+          "normalized_requirement": "Technical documentation of a high-risk AI system shall be drawn up before that system is placed on the market or put into service and kept up to date, complying with Annex IV requirements.",
+          "applicability": "High-risk AI systems",
+          "effective_date": "2026-08-02",
+          "implementation_guidance": "Compile comprehensive Annex IV technical documentation including model cards, architecture diagrams, algorithmic choices, and validation results.",
+          "evidence_expected": [
+            "Annex IV Technical Documentation File",
+            "Model Card",
+            "System Architecture & Data Flow Diagram"
+          ],
+          "domain": "Documentation & Records",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e2373-1-1"
+        },
+        {
+          "id": "EU-AIA-ART-12",
+          "article": "Article 12",
+          "title": "Record-Keeping and Automatic Logging",
+          "normalized_requirement": "High-risk AI systems shall technically allow for the automatic recording of events ('logs') over the lifetime of the system to ensure traceability of system functioning and post-market monitoring.",
+          "applicability": "High-risk AI systems",
+          "effective_date": "2026-08-02",
+          "implementation_guidance": "Implement automated immutable logging capturing system inputs, outputs, operational periods, and exceptions.",
+          "evidence_expected": [
+            "Logging Architecture Specification",
+            "Sample Operational Audit Log",
+            "Log Retention & Protection Policy"
+          ],
+          "domain": "Logging & Monitoring",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e2432-1-1"
+        },
+        {
+          "id": "EU-AIA-ART-13",
+          "article": "Article 13",
+          "title": "Transparency and Provision of Information to Deployers",
+          "normalized_requirement": "High-risk AI systems shall be designed and developed in such a way as to ensure that their operation is sufficiently transparent to enable deployers to interpret the system's output and use it appropriately, accompanied by clear instructions for use.",
+          "applicability": "High-risk AI systems",
+          "effective_date": "2026-08-02",
+          "implementation_guidance": "Publish comprehensive deployer instructions for use, detailing capabilities, limitations, intended purpose, and performance metrics.",
+          "evidence_expected": [
+            "Deployer Instructions for Use",
+            "System Limitations Disclosure",
+            "User Manual"
+          ],
+          "domain": "Transparency",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e2488-1-1"
+        },
+        {
+          "id": "EU-AIA-ART-14",
+          "article": "Article 14",
+          "title": "Human Oversight",
+          "normalized_requirement": "High-risk AI systems shall be designed and developed in such a way, including with appropriate human-machine interface tools, that they can be effectively overseen by natural persons during the period in which they are in use, with the ability to intervene or stop the system.",
+          "applicability": "High-risk AI systems",
+          "effective_date": "2026-08-02",
+          "implementation_guidance": "Establish human-in-the-loop / human-on-the-loop controls, override mechanisms, and emergency kill-switches.",
+          "evidence_expected": [
+            "Human Oversight Operational Procedure",
+            "Kill-Switch Test Procedure",
+            "Operator Training Plan"
+          ],
+          "domain": "Human Oversight",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e2578-1-1"
+        },
+        {
+          "id": "EU-AIA-ART-15",
+          "article": "Article 15",
+          "title": "Accuracy, Robustness and Cybersecurity",
+          "normalized_requirement": "High-risk AI systems shall be designed and developed in such a way that they achieve an appropriate level of accuracy, robustness, and cybersecurity, resilient against errors, faults, data poisoning, and adversarial attacks.",
+          "applicability": "High-risk AI systems",
+          "effective_date": "2026-08-02",
+          "implementation_guidance": "Perform red-teaming, adversarial robustness evaluations, prompt injection testing, and vulnerability management.",
+          "evidence_expected": [
+            "AI Security Assessment Report",
+            "Model Evaluation & Benchmark Report",
+            "Adversarial Robustness Test Results"
+          ],
+          "domain": "Security & Robustness",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e2669-1-1"
+        }
+      ]
+    },
+    {
+      "chapter_id": "Chapter IV",
+      "title": "Transparency Obligations for Certain AI Systems",
+      "requirements": [
+        {
+          "id": "EU-AIA-ART-50",
+          "article": "Article 50",
+          "title": "Transparency Obligations for Providers and Deployers",
+          "normalized_requirement": "Providers shall ensure that AI systems intended to interact directly with natural persons are designed and developed so that the natural persons are informed that they are interacting with an AI system; deployers generating synthetic audio, image, video or text content shall disclose that content has been artificially generated or manipulated.",
+          "applicability": "AI systems interacting with humans or generating synthetic content",
+          "effective_date": "2026-08-02",
+          "implementation_guidance": "Provide clear AI disclosure banners, machine-readable watermarking, or provenance metadata on synthetic outputs.",
+          "evidence_expected": [
+            "UI AI Interaction Disclosure Screenshot",
+            "Synthetic Content Watermarking Specification",
+            "Deployer Disclosure Notice"
+          ],
+          "domain": "Transparency",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e4420-1-1"
+        }
+      ]
+    },
+    {
+      "chapter_id": "Chapter V",
+      "title": "General-Purpose AI Models",
+      "requirements": [
+        {
+          "id": "EU-AIA-ART-53",
+          "article": "Article 53",
+          "title": "Obligations for Providers of General-Purpose AI Models",
+          "normalized_requirement": "Providers of general-purpose AI models shall draw up and keep up to date technical documentation, provide documentation to downstream providers, put in place a policy to respect Union copyright law, and publish a sufficiently detailed summary of content used for training.",
+          "applicability": "Providers of General-Purpose AI (GPAI) models",
+          "effective_date": "2025-08-02",
+          "implementation_guidance": "Maintain GPAI technical dossiers, downstream integration guidance, copyright compliance policy, and public training dataset summaries.",
+          "evidence_expected": [
+            "GPAI Technical File",
+            "Copyright Compliance Policy",
+            "Public Training Data Summary Document"
+          ],
+          "domain": "Model Security & IP",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#d1e4664-1-1"
+        }
+      ]
+    }
+  ]
+}

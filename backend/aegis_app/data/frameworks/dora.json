@@ -1,0 +1,52 @@
+{
+  "id": "dora",
+  "name": "Digital Operational Resilience Act (DORA)",
+  "short_name": "DORA",
+  "official_reference": "Regulation (EU) 2022/2554",
+  "jurisdiction": "European Union (Financial Sector)",
+  "type": "Regulation / Law",
+  "version": "2022/2554",
+  "publication_date": "2022-12-27",
+  "effective_date": "2025-01-17",
+  "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R2554",
+  "status": "current",
+  "description": "Establishes uniform digital operational resilience requirements for EU financial entities and their critical third-party ICT service providers (including AI and cloud vendors).",
+  "chapters": [
+    {
+      "chapter_id": "Chapter II & V",
+      "title": "ICT Risk Management & Third-Party Risk",
+      "requirements": [
+        {
+          "id": "DORA-ART-06-ICT-RISK",
+          "article": "Article 6",
+          "title": "ICT Risk Management Framework",
+          "normalized_requirement": "Financial entities shall have a sound, comprehensive and well-documented ICT risk management framework as part of their overall risk management system, covering AI-enabled financial algorithms and processing systems.",
+          "applicability": "Financial entities operating in the EU",
+          "effective_date": "2025-01-17",
+          "implementation_guidance": "Document digital operational resilience protocols for automated trading and credit decision AI.",
+          "evidence_expected": [
+            "DORA ICT Risk Management Framework Policy",
+            "Financial AI Resilience Assessment"
+          ],
+          "domain": "Risk Management",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R2554"
+        },
+        {
+          "id": "DORA-ART-28-THIRD-PARTY",
+          "article": "Article 28",
+          "title": "Management of ICT Third-Party AI/Cloud Risk",
+          "normalized_requirement": "Financial entities shall manage ICT third-party risk as an integral component of ICT risk, maintaining an information register of all contractual arrangements on the use of ICT services provided by third-party providers (including foundation model vendors).",
+          "applicability": "Financial entities relying on external AI/cloud providers",
+          "effective_date": "2025-01-17",
+          "implementation_guidance": "Audit AI vendor contracts, require clear service level agreements, and maintain a register of third-party model providers.",
+          "evidence_expected": [
+            "DORA ICT Third-Party Register",
+            "AI Vendor Contractual Security Addendum"
+          ],
+          "domain": "Supply Chain Security",
+          "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R2554"
+        }
+      ]
+    }
+  ]
+}

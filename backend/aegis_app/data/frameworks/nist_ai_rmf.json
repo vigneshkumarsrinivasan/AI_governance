@@ -1,0 +1,163 @@
+{
+  "id": "nist_ai_rmf",
+  "name": "NIST Artificial Intelligence Risk Management Framework",
+  "short_name": "NIST AI RMF 1.0",
+  "official_reference": "NIST AI 100-1",
+  "jurisdiction": "United States / International",
+  "type": "Standard / Guidance",
+  "version": "1.0",
+  "publication_date": "2023-01-26",
+  "effective_date": "2023-01-26",
+  "official_url": "https://www.nist.gov/itl/ai-risk-management-framework",
+  "status": "current",
+  "description": "Voluntary guidance developed by the National Institute of Standards and Technology to help organizations improve the trustworthiness and manage risks of artificial intelligence systems across GOVERN, MAP, MEASURE, and MANAGE functions.",
+  "applicability_conditions": [
+    "Organizations designing, developing, deploying, or using AI systems seeking trustworthy and responsible AI practices"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "GOVERN",
+      "title": "GOVERN Function",
+      "requirements": [
+        {
+          "id": "NIST-RMF-GOV-1.1",
+          "article": "GOVERN 1.1",
+          "title": "Legal and Regulatory Requirements Identification",
+          "normalized_requirement": "Legal and other requirements regarding AI risks are understood, managed, and integrated into organizational policies and procedures.",
+          "applicability": "All AI deployments",
+          "effective_date": "2023-01-26",
+          "implementation_guidance": "Maintain an AI regulatory inventory and map legal requirements to organizational policies.",
+          "evidence_expected": [
+            "AI Legal & Regulatory Register",
+            "AI Governance Policy"
+          ],
+          "domain": "AI Governance",
+          "official_url": "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        },
+        {
+          "id": "NIST-RMF-GOV-1.2",
+          "article": "GOVERN 1.2",
+          "title": "Trustworthy AI Characteristics Integration",
+          "normalized_requirement": "Trustworthy characteristics (valid, reliable, safe, secure, resilient, explainable, transparent, privacy-enhanced, and fair) are prioritized and integrated into AI lifecycle processes.",
+          "applicability": "All AI deployments",
+          "effective_date": "2023-01-26",
+          "implementation_guidance": "Define trustworthy AI principles in the organizational AI code of conduct and engineering guidelines.",
+          "evidence_expected": [
+            "Trustworthy AI Principles Document",
+            "AI Ethics Review Process"
+          ],
+          "domain": "AI Governance",
+          "official_url": "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        },
+        {
+          "id": "NIST-RMF-GOV-2.1",
+          "article": "GOVERN 2.1",
+          "title": "Roles and Responsibilities for AI Risk Management",
+          "normalized_requirement": "Roles and responsibilities for AI system design, development, deployment, evaluation, and monitoring are clearly defined, allocated, and communicated.",
+          "applicability": "All AI deployments",
+          "effective_date": "2023-01-26",
+          "implementation_guidance": "Establish an AI Governance Committee, define RACI matrices for AI projects, and assign designated AI system owners.",
+          "evidence_expected": [
+            "AI RACI Matrix",
+            "AI Governance Committee Charter"
+          ],
+          "domain": "Accountability",
+          "official_url": "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        },
+        {
+          "id": "NIST-RMF-GOV-5.1",
+          "article": "GOVERN 5.1",
+          "title": "AI Risk Management Policies and Processes",
+          "normalized_requirement": "Policies, processes, and procedures are in place, operationalized, and maintained to manage AI risks throughout the lifecycle.",
+          "applicability": "All AI deployments",
+          "effective_date": "2023-01-26",
+          "implementation_guidance": "Publish standard operating procedures for AI risk assessment, change management, and incident response.",
+          "evidence_expected": [
+            "AI Risk Management SOP",
+            "AI Incident Response Plan"
+          ],
+          "domain": "Risk Management",
+          "official_url": "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        }
+      ]
+    },
+    {
+      "chapter_id": "MAP",
+      "title": "MAP Function",
+      "requirements": [
+        {
+          "id": "NIST-RMF-MAP-1.1",
+          "article": "MAP 1.1",
+          "title": "Context of Use and Business Purpose",
+          "normalized_requirement": "The intended purpose, context of use, operational environment, and societal impact of the AI system are formally documented.",
+          "applicability": "All AI systems",
+          "effective_date": "2023-01-26",
+          "implementation_guidance": "Complete an AI System Profile capturing business purpose, target users, deployment environment, and expected benefits.",
+          "evidence_expected": [
+            "AI System Intake Form",
+            "Business Impact Analysis"
+          ],
+          "domain": "AI Inventory",
+          "official_url": "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        },
+        {
+          "id": "NIST-RMF-MAP-2.1",
+          "article": "MAP 2.1",
+          "title": "AI System Architecture and Dependencies",
+          "normalized_requirement": "The AI system components, algorithms, foundation models, data pipelines, third-party libraries, and external APIs are identified and mapped.",
+          "applicability": "All AI systems",
+          "effective_date": "2023-01-26",
+          "implementation_guidance": "Maintain architecture diagrams, AI Bills of Materials (AIBOM), and third-party vendor dependency registries.",
+          "evidence_expected": [
+            "AI Architecture Diagram",
+            "Software/AI Bill of Materials (AIBOM)"
+          ],
+          "domain": "AI Inventory & Supply Chain",
+          "official_url": "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        }
+      ]
+    },
+    {
+      "chapter_id": "MEASURE",
+      "title": "MEASURE Function",
+      "requirements": [
+        {
+          "id": "NIST-RMF-MEA-2.1",
+          "article": "MEASURE 2.1",
+          "title": "Quantitative and Qualitative Metrics",
+          "normalized_requirement": "Test, evaluation, validation, and verification (TEVV) processes are implemented to measure accuracy, reliability, robustness, fairness, and security.",
+          "applicability": "All AI systems",
+          "effective_date": "2023-01-26",
+          "implementation_guidance": "Define performance benchmarks, run red teaming and adversarial testing, and log model evaluation metrics.",
+          "evidence_expected": [
+            "AI Model Test & Evaluation Report",
+            "Fairness & Bias Audit Results"
+          ],
+          "domain": "Testing & Validation",
+          "official_url": "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        }
+      ]
+    },
+    {
+      "chapter_id": "MANAGE",
+      "title": "MANAGE Function",
+      "requirements": [
+        {
+          "id": "NIST-RMF-MAN-2.4",
+          "article": "MANAGE 2.4",
+          "title": "Risk Treatment and Mechanism for Overrides",
+          "normalized_requirement": "Mechanisms for human intervention, override, fallback, or safe shutdown (kill-switch) are established and operational.",
+          "applicability": "Autonomous, agentic, or high-consequence AI systems",
+          "effective_date": "2023-01-26",
+          "implementation_guidance": "Implement technical kill switches, human approval gates, and fallback operational modes for AI applications.",
+          "evidence_expected": [
+            "Human Intervention & Kill-Switch Runbook",
+            "Fail-Safe Operational Test Log"
+          ],
+          "domain": "Human Oversight",
+          "official_url": "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+# Local development orchestration for AegisAI Governance OS.
+# NOT a production deployment topology (no TLS termination, no secrets
+# manager, no autoscaling, no separate staging/prod isolation) - see
+# PRODUCTION_READINESS.md for what real production deployment still needs.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aegis
+      POSTGRES_PASSWORD: aegis_dev_password
+      POSTGRES_DB: aegis_ai
+    ports:
+      - "5433:5432"
+    volumes:
+      - aegis_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis -d aegis_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      ENVIRONMENT: development
+      SECRET_KEY: dev-only-secret-do-not-use-in-production
+      DATABASE_URL: postgresql+asyncpg://aegis:aegis_dev_password@postgres:5432/aegis_ai
+      SEED_DEMO_DATA: "true"
+      STORAGE_BACKEND: local
+      STORAGE_LOCAL_DIR: /app/evidence_storage
+      BACKEND_CORS_ORIGINS: '["http://localhost:3001","http://localhost:3050"]'
+    ports:
+      - "8000:8000"
+    volumes:
+      - aegis_evidence_storage:/app/evidence_storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE: http://localhost:8000/api/v1
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+
+volumes:
+  aegis_postgres_data:
+  aegis_evidence_storage:

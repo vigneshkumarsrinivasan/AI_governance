@@ -1,0 +1,115 @@
+{
+  "id": "owasp_llm",
+  "name": "OWASP Top 10 for Large Language Model Applications",
+  "short_name": "OWASP LLM Top 10",
+  "official_reference": "OWASP GenAI Top 10 (2025)",
+  "jurisdiction": "International",
+  "type": "Security Standard",
+  "version": "2025 v2.0",
+  "publication_date": "2024-11-01",
+  "effective_date": "2024-11-01",
+  "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+  "status": "current",
+  "description": "Authoritative list of the most critical security vulnerabilities found in large language model applications, providing developers, architects, and CISOs with actionable mitigation guidance.",
+  "applicability_conditions": [
+    "Any software system utilizing Large Language Models (LLMs) or foundation models"
+  ],
+  "chapters": [
+    {
+      "chapter_id": "Top 10 Risks",
+      "title": "OWASP LLM Core Risks",
+      "requirements": [
+        {
+          "id": "OWASP-LLM-01",
+          "article": "LLM01:2025",
+          "title": "Prompt Injection",
+          "normalized_requirement": "The organization shall protect the application against prompt injections (direct jailbreaks and indirect injections via external data sources) by enforcing input validation, context separation, privileged tool constraints, and output verification.",
+          "applicability": "All LLM applications",
+          "effective_date": "2024-11-01",
+          "implementation_guidance": "Employ prompt sanitization, demarcate untrusted content, and constrain agent permissions.",
+          "evidence_expected": [
+            "Prompt Injection Penetration Test",
+            "Guardrail Configuration Documentation"
+          ],
+          "domain": "Prompt Security",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "id": "OWASP-LLM-02",
+          "article": "LLM02:2025",
+          "title": "Sensitive Information Disclosure",
+          "normalized_requirement": "The organization shall prevent the exposure of PII, proprietary source code, secrets, or confidential business data in LLM outputs through pre-training/fine-tuning sanitization, RAG access controls, and real-time egress filtering.",
+          "applicability": "All LLM applications handling sensitive data",
+          "effective_date": "2024-11-01",
+          "implementation_guidance": "Deploy automated PII redaction and DLP filters on LLM inputs and responses.",
+          "evidence_expected": [
+            "DLP / PII Redaction Configuration",
+            "Data Egress Security Audit"
+          ],
+          "domain": "Privacy & Data Protection",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "id": "OWASP-LLM-03",
+          "article": "LLM03:2025",
+          "title": "Supply Chain Vulnerabilities",
+          "normalized_requirement": "The organization shall audit and verify the integrity and origin of third-party models, weights, datasets, plugins, and libraries using cryptographically signed hashes and trusted registries.",
+          "applicability": "AI systems consuming external models or datasets",
+          "effective_date": "2024-11-01",
+          "implementation_guidance": "Enforce model signature verification and scan Python/ML dependencies for known CVEs.",
+          "evidence_expected": [
+            "AI Supply Chain Integrity Verification Log",
+            "Model Weight Checksum Audit"
+          ],
+          "domain": "Supply Chain Security",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "id": "OWASP-LLM-04",
+          "article": "LLM04:2025",
+          "title": "Data and Model Poisoning",
+          "normalized_requirement": "The organization shall prevent malicious manipulation of training data, fine-tuning datasets, or vector embeddings that introduce backdoors or bias.",
+          "applicability": "Trained, fine-tuned, or RAG-based AI systems",
+          "effective_date": "2024-11-01",
+          "implementation_guidance": "Validate data sources, compute data integrity hashes, and conduct data anomaly detection.",
+          "evidence_expected": [
+            "Training Data Verification Log",
+            "Vector DB Integrity Audit"
+          ],
+          "domain": "Model Security",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "id": "OWASP-LLM-05",
+          "article": "LLM05:2025",
+          "title": "Improper Output Handling",
+          "normalized_requirement": "The organization shall treat LLM outputs as untrusted and perform strict validation and sanitization prior to passing outputs to downstream components, databases, or browsers to prevent XSS, SSRF, or SQL injection.",
+          "applicability": "All LLM applications integrated into applications",
+          "effective_date": "2024-11-01",
+          "implementation_guidance": "Sanitize and encode all model outputs before rendering or executing database queries.",
+          "evidence_expected": [
+            "Downstream Sanitization Code Review",
+            "Penetration Testing Report"
+          ],
+          "domain": "Secure Development",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "id": "OWASP-LLM-06",
+          "article": "LLM06:2025",
+          "title": "Excessive Agency",
+          "normalized_requirement": "The organization shall restrict the autonomy and permissions granted to LLMs and AI agents, adhering to the principle of least privilege, requiring human confirmation for sensitive operations, and rate-limiting actions.",
+          "applicability": "Autonomous agents, tool-calling LLMs",
+          "effective_date": "2024-11-01",
+          "implementation_guidance": "Enforce tool permission boundaries and mandatory human-in-the-loop approval gates for destructive actions.",
+          "evidence_expected": [
+            "Agent Permission Policy",
+            "Approval Gate Implementation Audit"
+          ],
+          "domain": "Agent Security",
+          "official_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ]
+    }
+  ]
+}

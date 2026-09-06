@@ -12,7 +12,7 @@ from alembic import context
 # the running application) - never a hard-coded URL duplicated here.
 from aegis_app.core.config import settings
 from aegis_app.core.database import Base
-from aegis_app.models import models  # noqa: F401  (registers all tables on Base.metadata)
+from aegis_app.models import models, regulatory  # noqa: F401  (registers all tables on Base.metadata)
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

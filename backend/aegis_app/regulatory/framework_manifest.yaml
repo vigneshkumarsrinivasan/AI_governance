@@ -1,0 +1,758 @@
+# =============================================================================
+# CANONICAL REGULATORY SOURCE & LICENCE MANIFEST
+# =============================================================================
+# This file is the single source of truth for WHERE authoritative regulatory
+# content comes from and WHETHER the platform is legally permitted to reproduce
+# it. The ingestion pipeline (aegis_app/regulatory/pipeline.py) reconciles the
+# database against this file on every run.
+#
+# licence_status vocabulary (spec section 3):
+#   VERIFIED_REUSABLE            - open licence / public-domain, full text may be shown
+#   VERIFIED_WITH_ATTRIBUTION    - reuse allowed if source is acknowledged
+#   VERIFIED_SHARE_ALIKE         - reuse allowed, derivatives must use same licence
+#   SOURCE_ONLY_NO_REDISTRIBUTION- may parse for internal structure, MUST NOT show full text
+#   CUSTOMER_LICENCE_REQUIRED    - customer must supply their own licensed copy
+#   UNKNOWN                      - not yet reviewed; store legally-safe metadata only
+#
+# ingestion_status vocabulary:
+#   READY_MACHINE_READABLE  - official structured source exists and a parser is implemented
+#   READY_FIXTURE           - committed offline fixture available, parser implemented
+#   SOURCE_RETRIEVAL_BLOCKED- no reusable structured source yet / licence blocks reproduction
+#   METADATA_ONLY           - only reference metadata stored, no provisions reproduced
+# =============================================================================
+
+manifest_version: "1.0.0"
+generated_note: >
+  Licence determinations recorded here are engineering best-effort based on the
+  publishers' stated terms and must be confirmed by qualified counsel before a
+  framework is marked PRODUCTION_READY (spec section 3, section 41).
+
+frameworks:
+
+  # ---------------------------------------------------------------------------
+  # 1. EU AI ACT
+  # ---------------------------------------------------------------------------
+  - framework_key: eu_ai_act
+    framework_family: "EU AI Act"
+    framework_name: "Regulation (EU) 2024/1689 (Artificial Intelligence Act)"
+    authority: "European Union (European Parliament and Council)"
+    jurisdiction: "European Union"
+    framework_type: REGULATION
+    version_label: "2024/1689"
+    canonical_identifier: "CELEX:32024R1689"
+    publication_date: "2024-07-12"
+    effective_date: "2024-08-01"
+    application_dates:
+      prohibitions_and_ai_literacy: "2025-02-02"
+      gpai_governance_penalties: "2025-08-02"
+      general_application: "2026-08-02"
+      high_risk_annex_i_products: "2027-08-02"
+    licence:
+      copyright_owner: "© European Union, 1998-2025"
+      licence_name: "Commission Decision 2011/833/EU on the reuse of Commission documents / EUR-Lex reuse notice"
+      licence_url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: false
+      third_party_material_present: false
+      licence_status: VERIFIED_WITH_ATTRIBUTION
+      attribution_statement: >
+        © European Union, https://eur-lex.europa.eu, 1998-2025. Reused under the
+        conditions of Commission Decision 2011/833/EU. Only European Union
+        legislation printed in the paper edition of the Official Journal of the
+        European Union is deemed authentic.
+    documents:
+      - document_key: eu_ai_act_docx
+        document_name: "Regulation (EU) 2024/1689 - EUR-Lex EN text (Word export supplied by operator)"
+        official_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689"
+        machine_readable_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/XML/?uri=CELEX:32024R1689"
+        source_format: docx
+        retrieval:
+          mode: local_file
+          path: "EU AI Act.docx"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: eu_docx
+    notes: >
+      Ingested from the operator-supplied EUR-Lex Word export: full
+      Recital / Chapter / Section / Article / Paragraph / Point / Annex hierarchy
+      + Article 3 definitions + phased Article 113 application dates. Role engine
+      and human requirement review still pending.
+
+  # ---------------------------------------------------------------------------
+  # 2. NIST AI RMF 1.0
+  # ---------------------------------------------------------------------------
+  - framework_key: nist_ai_rmf
+    framework_family: "NIST AI RMF"
+    framework_name: "NIST AI Risk Management Framework (AI RMF 1.0)"
+    authority: "National Institute of Standards and Technology (NIST), U.S. Department of Commerce"
+    jurisdiction: "United States (voluntary, international adoption)"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "1.0"
+    canonical_identifier: "NIST AI 100-1"
+    publication_date: "2023-01-26"
+    effective_date: "2023-01-26"
+    licence:
+      copyright_owner: "U.S. Government work - not subject to copyright in the United States (17 U.S.C. 105)"
+      licence_name: "U.S. Government Work / Public Domain"
+      licence_url: "https://www.nist.gov/open/license"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: false
+      share_alike_required: false
+      third_party_material_present: false
+      licence_status: VERIFIED_REUSABLE
+      attribution_statement: >
+        Source: NIST AI Risk Management Framework (AI RMF 1.0), NIST AI 100-1.
+        NIST does not endorse this product.
+    documents:
+      - document_key: airmf_appendix_a
+        document_name: "AI RMF 1.0 Appendix A - Function/Category/Subcategory table"
+        official_url: "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf"
+        machine_readable_url: "https://airc.nist.gov/AI_RMF_Knowledge_Base/AI_RMF"
+        source_format: pdf
+        retrieval:
+          mode: local_file
+          path: "NIST.AI.100-1.pdf"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: nist_ai_rmf_pdf
+    notes: >
+      GOVERN/MAP/MEASURE/MANAGE functions with 19 categories and 72 subcategories
+      transcribed from NIST AI 100-1 Appendix A into a committed fixture and
+      verified against the publication.
+
+  # ---------------------------------------------------------------------------
+  # 3. NIST AI 600-1 GENERATIVE AI PROFILE
+  # ---------------------------------------------------------------------------
+  - framework_key: nist_ai_600_1
+    framework_family: "NIST AI RMF"
+    framework_name: "NIST AI 600-1: Generative AI Profile (AI RMF companion)"
+    authority: "National Institute of Standards and Technology (NIST)"
+    jurisdiction: "United States (voluntary)"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "600-1 (2024)"
+    canonical_identifier: "NIST AI 600-1"
+    publication_date: "2024-07-26"
+    effective_date: "2024-07-26"
+    licence:
+      copyright_owner: "U.S. Government work - not subject to copyright in the United States (17 U.S.C. 105)"
+      licence_name: "U.S. Government Work / Public Domain"
+      licence_url: "https://www.nist.gov/open/license"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: false
+      share_alike_required: false
+      licence_status: VERIFIED_REUSABLE
+      attribution_statement: "Source: NIST AI 600-1 Generative AI Profile. NIST does not endorse this product."
+    documents:
+      - document_key: ai6001_pdf
+        document_name: "Artificial Intelligence Risk Management Framework: Generative AI Profile"
+        official_url: "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf"
+        machine_readable_url: "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf"
+        source_format: pdf
+        retrieval:
+          mode: local_file
+          path: "NIST.AI.600-1.pdf"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: nist_ai_600_1_pdf
+    notes: >
+      12 GAI risk categories + ~200 suggested actions cross-referenced to AI RMF
+      subcategories. PDF-only source; structured extraction + review pending.
+
+  # ---------------------------------------------------------------------------
+  # 4. EU CYBER RESILIENCE ACT
+  # ---------------------------------------------------------------------------
+  - framework_key: eu_cra
+    framework_family: "EU Cyber Resilience Act"
+    framework_name: "Regulation (EU) 2024/2847 (Cyber Resilience Act)"
+    authority: "European Union (European Parliament and Council)"
+    jurisdiction: "European Union"
+    framework_type: REGULATION
+    version_label: "2024/2847"
+    canonical_identifier: "CELEX:32024R2847"
+    publication_date: "2024-11-20"
+    effective_date: "2024-12-10"
+    application_dates:
+      reporting_obligations: "2026-09-11"
+      general_application: "2027-12-11"
+    licence:
+      copyright_owner: "© European Union, 1998-2025"
+      licence_name: "Commission Decision 2011/833/EU / EUR-Lex reuse notice"
+      licence_url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: false
+      licence_status: VERIFIED_WITH_ATTRIBUTION
+      attribution_statement: "© European Union, https://eur-lex.europa.eu, 1998-2025."
+    documents:
+      - document_key: eu_cra_xml
+        document_name: "Cyber Resilience Act (XML)"
+        official_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847"
+        machine_readable_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/XML/?uri=CELEX:32024R2847"
+        source_format: docx
+        retrieval:
+          mode: local_file
+          path: "EU CRA.docx"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: eu_docx
+    notes: "Articles + Annex I (essential requirements) + Annex II/VII. Parser shared with eu_lex; extraction pending."
+
+  # ---------------------------------------------------------------------------
+  # 5. OWASP GenAI / LLM TOP 10
+  # ---------------------------------------------------------------------------
+  - framework_key: owasp_llm
+    framework_family: "OWASP GenAI Security Project"
+    framework_name: "OWASP Top 10 for LLM Applications"
+    authority: "OWASP Foundation / GenAI Security Project"
+    jurisdiction: "International (community standard)"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "2026"
+    canonical_identifier: "OWASP-LLM-TOP10-2025"
+    publication_date: "2024-11-18"
+    effective_date: "2024-11-18"
+    licence:
+      copyright_owner: "© OWASP Foundation"
+      licence_name: "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)"
+      licence_url: "https://creativecommons.org/licenses/by-sa/4.0/"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: true
+      licence_status: VERIFIED_SHARE_ALIKE
+      attribution_statement: >
+        Source: OWASP Top 10 for LLM Applications (2025), OWASP Foundation,
+        licensed CC BY-SA 4.0. This platform is not affiliated with or endorsed
+        by the OWASP Foundation.
+    documents:
+      - document_key: owasp_llm_2025_md
+        document_name: "OWASP Top 10 for LLM Applications 2025 - entry markdown"
+        official_url: "https://genai.owasp.org/llm-top-10/"
+        machine_readable_url: "https://raw.githubusercontent.com/GenAI-Security-Project/GenAI-LLM-Top10/main/2025/"
+        source_format: pdf
+        retrieval:
+          mode: local_file
+          path: "OWASP-GenAI-LLM-Top-10-2026-v1.0.pdf"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: owasp_pdf
+    notes: >
+      Ten risk entries (LLM01..LLM10) parsed from the official GenAI Security
+      Project repository. 2026 release also present in-repo and ingested as a
+      separate FrameworkVersion once its structure stabilises.
+
+  # ---------------------------------------------------------------------------
+  # 6. OWASP AGENTIC AI
+  # ---------------------------------------------------------------------------
+  - framework_key: owasp_agentic_ai
+    framework_family: "OWASP GenAI Security Project"
+    framework_name: "OWASP Agentic AI - Threats and Mitigations"
+    authority: "OWASP Foundation / GenAI Security Project - Agentic Security Initiative"
+    jurisdiction: "International (community standard)"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "2026"
+    canonical_identifier: "OWASP-ASI-THREATS-v1.0"
+    publication_date: "2025-02-17"
+    effective_date: "2025-02-17"
+    licence:
+      copyright_owner: "© OWASP Foundation"
+      licence_name: "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)"
+      licence_url: "https://creativecommons.org/licenses/by-sa/4.0/"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: true
+      licence_status: VERIFIED_SHARE_ALIKE
+      attribution_statement: "Source: OWASP Agentic AI Threats and Mitigations v1.0, OWASP Foundation, CC BY-SA 4.0."
+    documents:
+      - document_key: owasp_agentic_pdf
+        document_name: "Agentic AI - Threats and Mitigations"
+        official_url: "https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/"
+        source_format: pdf
+        retrieval:
+          mode: local_file
+          path: "OWASP-Top-10-for-Agentic-Applications-2026-12.6-1.pdf"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: owasp_pdf
+    notes: >
+      Taxonomy of ~15 agentic threats (T1..T15). PDF-only; no stable machine-
+      readable artefact yet. Metadata + threat identifiers captured; full
+      description/mitigation extraction pending.
+
+  # ---------------------------------------------------------------------------
+  # 7. NIST CSF 2.0
+  # ---------------------------------------------------------------------------
+  - framework_key: nist_csf_2
+    framework_family: "NIST Cybersecurity Framework"
+    framework_name: "NIST Cybersecurity Framework (CSF) 2.0"
+    authority: "National Institute of Standards and Technology (NIST)"
+    jurisdiction: "United States (voluntary, international adoption)"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "2.0"
+    canonical_identifier: "NIST CSWP 29"
+    publication_date: "2024-02-26"
+    effective_date: "2024-02-26"
+    licence:
+      copyright_owner: "U.S. Government work - not subject to copyright in the United States (17 U.S.C. 105)"
+      licence_name: "U.S. Government Work / Public Domain"
+      licence_url: "https://www.nist.gov/open/license"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: false
+      share_alike_required: false
+      third_party_material_present: true
+      licence_status: VERIFIED_REUSABLE
+      attribution_statement: >
+        Source: NIST Cybersecurity Framework (CSF) 2.0, NIST CSWP 29. Informative
+        References that map to third-party works (e.g. CIS, ISO/IEC) are the
+        property of their respective owners and are not reproduced.
+    documents:
+      - document_key: csf2_core_cprt
+        document_name: "CSF 2.0 Core (Functions/Categories/Subcategories/Implementation Examples)"
+        official_url: "https://www.nist.gov/cyberframework"
+        machine_readable_url: "https://csrc.nist.gov/extensions/nudp/services/json/nudp/framework/version/CSF_2_0_0/graph"
+        source_format: json
+        retrieval:
+          mode: cprt
+          framework_version_identifier: CSF_2_0_0
+          deep_from_type: category
+    ingestion_status: READY_MACHINE_READABLE
+    parser: nist_csf
+    notes: >
+      6 Functions, 22 Categories, 106 Subcategories. NIST CPRT/OLIR JSON export is
+      the canonical machine-readable source; a verified fixture snapshot is
+      committed for offline CI.
+
+  # ---------------------------------------------------------------------------
+  # 8. NIST SP 800-218 SSDF (+ 800-218A)
+  # ---------------------------------------------------------------------------
+  - framework_key: nist_sp_800_218
+    framework_family: "NIST Secure Software Development Framework"
+    framework_name: "NIST SP 800-218: Secure Software Development Framework (SSDF) v1.1"
+    authority: "National Institute of Standards and Technology (NIST)"
+    jurisdiction: "United States (voluntary)"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "1.1"
+    canonical_identifier: "NIST SP 800-218"
+    publication_date: "2022-02-03"
+    effective_date: "2022-02-03"
+    licence:
+      copyright_owner: "U.S. Government work - not subject to copyright in the United States (17 U.S.C. 105)"
+      licence_name: "U.S. Government Work / Public Domain"
+      licence_url: "https://www.nist.gov/open/license"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: false
+      share_alike_required: false
+      licence_status: VERIFIED_REUSABLE
+      attribution_statement: "Source: NIST SP 800-218 v1.1 (SSDF). NIST does not endorse this product."
+    documents:
+      - document_key: ssdf_cprt
+        document_name: "SSDF practices/tasks/examples (PO/PS/PW/RV)"
+        official_url: "https://csrc.nist.gov/pubs/sp/800/218/final"
+        machine_readable_url: "https://csrc.nist.gov/extensions/nudp/services/json/nudp/framework/version/SP_800_218_1_1_0/graph"
+        source_format: json
+        retrieval:
+          mode: cprt
+          framework_version_identifier: SP_800_218_1_1_0
+          deep_from_type: practice
+    ingestion_status: READY_MACHINE_READABLE
+    parser: nist_ssdf
+    related_documents:
+      - framework_key: nist_sp_800_218a
+        relationship: "800-218A PROFILE_OF 800-218"
+        canonical_identifier: "NIST SP 800-218A"
+        note: "Secure Software Development Practices for Generative AI and Dual-Use Foundation Models."
+    notes: >
+      4 practice groups, 19 practices, 42 tasks ingested from the official NIST
+      CPRT machine-readable graph for SP 800-218 v1.1. 800-218A to be ingested as
+      a separate linked framework_version.
+
+  # ---------------------------------------------------------------------------
+  # 9. GDPR
+  # ---------------------------------------------------------------------------
+  - framework_key: gdpr
+    framework_family: "GDPR"
+    framework_name: "Regulation (EU) 2016/679 (General Data Protection Regulation)"
+    authority: "European Union (European Parliament and Council)"
+    jurisdiction: "European Union / EEA"
+    framework_type: REGULATION
+    version_label: "2016/679"
+    canonical_identifier: "CELEX:32016R0679"
+    publication_date: "2016-04-27"
+    effective_date: "2018-05-25"
+    licence:
+      copyright_owner: "© European Union, 1998-2025"
+      licence_name: "Commission Decision 2011/833/EU / EUR-Lex reuse notice"
+      licence_url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: false
+      licence_status: VERIFIED_WITH_ATTRIBUTION
+      attribution_statement: "© European Union, https://eur-lex.europa.eu, 1998-2025."
+    documents:
+      - document_key: gdpr_xml
+        document_name: "GDPR (XML)"
+        official_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679"
+        machine_readable_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/XML/?uri=CELEX:32016R0679"
+        source_format: docx
+        retrieval:
+          mode: local_file
+          path: "GDPR.docx"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: eu_docx
+    notes: "11 chapters, 99 articles, 173 recitals. Shared eu_lex parser; extraction + AI-relevance applicability engine pending."
+
+  # ---------------------------------------------------------------------------
+  # 10. MITRE ATLAS
+  # ---------------------------------------------------------------------------
+  - framework_key: mitre_atlas
+    framework_family: "MITRE ATLAS"
+    framework_name: "MITRE ATLAS (Adversarial Threat Landscape for AI Systems)"
+    authority: "The MITRE Corporation"
+    jurisdiction: "International (threat knowledge base)"
+    framework_type: THREAT_KNOWLEDGE_BASE
+    version_label: "latest-release"
+    canonical_identifier: "ATLAS"
+    publication_date: "2025-01-01"
+    effective_date: "2025-01-01"
+    licence:
+      copyright_owner: "© The MITRE Corporation"
+      licence_name: "Apache License 2.0 (atlas-data repository)"
+      licence_url: "https://github.com/mitre-atlas/atlas-data/blob/main/LICENSE"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: false
+      licence_status: VERIFIED_WITH_ATTRIBUTION
+      attribution_statement: >
+        (c) 2025 The MITRE Corporation. This work is reproduced and distributed
+        with the permission of The MITRE Corporation. ATLAS and MITRE ATLAS are
+        trademarks of The MITRE Corporation. This platform is not affiliated with
+        or endorsed by MITRE.
+    documents:
+      - document_key: atlas_release_yaml
+        document_name: "ATLAS structured dataset (latest published release)"
+        official_url: "https://github.com/mitre-atlas/atlas-data/releases/latest"
+        machine_readable_url: "https://github.com/mitre-atlas/atlas-data/releases/latest"
+        source_format: yaml
+        retrieval:
+          mode: github_release
+          repo: mitre-atlas/atlas-data
+          asset_glob: "ATLAS-*.yaml"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: mitre_atlas
+    notes: >
+      Latest published release of mitre-atlas/atlas-data is resolved dynamically
+      at ingestion time (release tag + asset name + SHA-256 recorded). Tactics,
+      techniques, subtechniques, mitigations, case studies and relationships.
+
+  # ---------------------------------------------------------------------------
+  # 11. NIS2
+  # ---------------------------------------------------------------------------
+  - framework_key: nis2
+    framework_family: "NIS2"
+    framework_name: "Directive (EU) 2022/2555 (NIS2 Directive)"
+    authority: "European Union (European Parliament and Council)"
+    jurisdiction: "European Union (transposed by Member States)"
+    framework_type: DIRECTIVE
+    version_label: "2022/2555"
+    canonical_identifier: "CELEX:32022L2555"
+    publication_date: "2022-12-27"
+    effective_date: "2023-01-16"
+    application_dates:
+      transposition_deadline: "2024-10-17"
+    licence:
+      copyright_owner: "© European Union, 1998-2025"
+      licence_name: "Commission Decision 2011/833/EU / EUR-Lex reuse notice"
+      licence_url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: false
+      licence_status: VERIFIED_WITH_ATTRIBUTION
+      attribution_statement: "© European Union, https://eur-lex.europa.eu, 1998-2025."
+    documents:
+      - document_key: nis2_xml
+        document_name: "NIS2 Directive (XML)"
+        official_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555"
+        machine_readable_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/XML/?uri=CELEX:32022L2555"
+        source_format: docx
+        retrieval:
+          mode: local_file
+          path: "NIS2.docx"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: eu_docx
+    notes: >
+      EU baseline only. Architecture supports later per-Member-State transposition
+      packs. Extraction pending.
+
+  # ---------------------------------------------------------------------------
+  # 12. DORA
+  # ---------------------------------------------------------------------------
+  - framework_key: dora
+    framework_family: "DORA"
+    framework_name: "Regulation (EU) 2022/2554 (Digital Operational Resilience Act)"
+    authority: "European Union (European Parliament and Council)"
+    jurisdiction: "European Union (financial sector)"
+    framework_type: REGULATION
+    version_label: "2022/2554"
+    canonical_identifier: "CELEX:32022R2554"
+    publication_date: "2022-12-27"
+    effective_date: "2023-01-16"
+    application_dates:
+      general_application: "2025-01-17"
+    licence:
+      copyright_owner: "© European Union, 1998-2025"
+      licence_name: "Commission Decision 2011/833/EU / EUR-Lex reuse notice"
+      licence_url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: false
+      licence_status: VERIFIED_WITH_ATTRIBUTION
+      attribution_statement: "© European Union, https://eur-lex.europa.eu, 1998-2025."
+    documents:
+      - document_key: dora_xml
+        document_name: "DORA Level 1 Regulation (XML)"
+        official_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R2554"
+        machine_readable_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/XML/?uri=CELEX:32022R2554"
+        source_format: docx
+        retrieval:
+          mode: local_file
+          path: "DORA.docx"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: eu_docx
+    notes: "Level 1 Regulation only; RTS/ITS/delegated acts ingested separately later without mutating the L1 version."
+
+  # ---------------------------------------------------------------------------
+  # 13. NIST SP 800-53
+  # ---------------------------------------------------------------------------
+  - framework_key: nist_sp_800_53
+    framework_family: "NIST SP 800-53"
+    framework_name: "NIST SP 800-53 Security and Privacy Controls for Information Systems and Organizations"
+    authority: "National Institute of Standards and Technology (NIST)"
+    jurisdiction: "United States (federal); widely adopted"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "Rev 5.2.0"
+    canonical_identifier: "NIST SP 800-53 Rev 5"
+    publication_date: "2020-09-23"
+    effective_date: "2020-09-23"
+    licence:
+      copyright_owner: "U.S. Government work - not subject to copyright in the United States (17 U.S.C. 105)"
+      licence_name: "U.S. Government Work / Public Domain (OSCAL content: NIST licence)"
+      licence_url: "https://github.com/usnistgov/oscal-content/blob/main/LICENSE.md"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: false
+      share_alike_required: false
+      licence_status: VERIFIED_REUSABLE
+      attribution_statement: "Source: NIST SP 800-53 Rev 5 (OSCAL). NIST does not endorse this product."
+    documents:
+      - document_key: sp80053_oscal_json
+        document_name: "NIST SP 800-53 Rev 5 OSCAL catalog (JSON)"
+        official_url: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"
+        machine_readable_url: "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-53/rev5/json/NIST_SP-800-53_rev5_catalog.json"
+        source_format: oscal_json
+    ingestion_status: READY_MACHINE_READABLE
+    parser: nist_oscal
+    notes: "Complete Rev 5 catalog: 20 control families, all controls and enhancements from official OSCAL."
+
+  # ---------------------------------------------------------------------------
+  # 14. UK AI CYBER SECURITY CODE OF PRACTICE
+  # ---------------------------------------------------------------------------
+  - framework_key: uk_ai_cyber_code
+    framework_family: "UK AI Cyber Security Code of Practice"
+    framework_name: "UK Code of Practice for the Cyber Security of AI"
+    authority: "UK Department for Science, Innovation and Technology (DSIT)"
+    jurisdiction: "United Kingdom (voluntary code)"
+    framework_type: VOLUNTARY_CODE
+    version_label: "2025-01"
+    canonical_identifier: "DSIT-AI-CYBER-COP-2025"
+    publication_date: "2025-01-31"
+    effective_date: "2025-01-31"
+    licence:
+      copyright_owner: "© Crown copyright"
+      licence_name: "Open Government Licence v3.0 (OGL)"
+      licence_url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: false
+      licence_status: VERIFIED_WITH_ATTRIBUTION
+      attribution_statement: >
+        Contains public sector information licensed under the Open Government
+        Licence v3.0. Source: UK DSIT Code of Practice for the Cyber Security of AI.
+    documents:
+      - document_key: uk_ai_code_html
+        document_name: "Code of Practice for the Cyber Security of AI"
+        official_url: "https://www.gov.uk/government/publications/ai-cyber-security-code-of-practice"
+        source_format: pdf
+        retrieval:
+          mode: local_file
+          path: "Implementation_Guide_for_the_AI_Cyber_Security_Code_of_Practice.pdf"
+    ingestion_status: READY_MACHINE_READABLE
+    parser: uk_pdf
+    notes: "13 principles across 5 lifecycle phases. HTML source; parser + review pending."
+
+  # ---------------------------------------------------------------------------
+  # 15. INDIA DPDP ACT + RULES
+  # ---------------------------------------------------------------------------
+  - framework_key: india_dpdp
+    framework_family: "India DPDP"
+    framework_name: "Digital Personal Data Protection Act, 2023 (+ DPDP Rules)"
+    authority: "Government of India, Ministry of Electronics and Information Technology (MeitY)"
+    jurisdiction: "India"
+    framework_type: LAW
+    version_label: "Rules 2025"
+    canonical_identifier: "DPDP-ACT-2023"
+    publication_date: "2023-08-11"
+    effective_date: "TBD (phased commencement notifications)"
+    licence:
+      copyright_owner: "© Government of India"
+      licence_name: "Not yet reviewed (Gazette of India / India Code terms; possible GODL-India)"
+      licence_url: "https://www.indiacode.nic.in/"
+      commercial_reuse_allowed: null
+      redistribution_allowed: null
+      modification_allowed: null
+      attribution_required: null
+      share_alike_required: null
+      licence_status: UNKNOWN
+      attribution_statement: "Source: Digital Personal Data Protection Act, 2023, Government of India."
+    documents:
+      - document_key: dpdp_act_pdf
+        document_name: "The Digital Personal Data Protection Act, 2023"
+        official_url: "https://www.meity.gov.in/content/digital-personal-data-protection-act-2023"
+        source_format: pdf
+      - document_key: dpdp_rules_pdf
+        document_name: "Digital Personal Data Protection Rules (final, as notified)"
+        official_url: "https://www.meity.gov.in/"
+        source_format: pdf
+        retrieval:
+          mode: local_file
+          path: "DPDP_Rules_2025_English_only.pdf"
+    ingestion_status: READY_MACHINE_READABLE
+    operator_supplied_primary_source: true
+    parser: dpdp_pdf
+    relationships:
+      - "DPDP_ACT IMPLEMENTED_BY DPDP_RULES"
+      - "DPDP_RULES CORRECTED_BY CORRIGENDUM"
+    notes: >
+      Licence UNKNOWN => per spec section 3 only legally-safe metadata (chapter/
+      section identifiers, titles, official links, commencement dates) is stored;
+      full provision text is NOT reproduced until licence review completes.
+
+  # ---------------------------------------------------------------------------
+  # 16. NIST SP 800-161
+  # ---------------------------------------------------------------------------
+  - framework_key: nist_sp_800_161
+    framework_family: "NIST SP 800-161"
+    framework_name: "NIST SP 800-161r1 Cybersecurity Supply Chain Risk Management Practices"
+    authority: "National Institute of Standards and Technology (NIST)"
+    jurisdiction: "United States (federal); widely adopted"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "Rev 1"
+    canonical_identifier: "NIST SP 800-161r1"
+    publication_date: "2022-05-05"
+    effective_date: "2022-05-05"
+    licence:
+      copyright_owner: "U.S. Government work - not subject to copyright in the United States (17 U.S.C. 105)"
+      licence_name: "U.S. Government Work / Public Domain"
+      licence_url: "https://www.nist.gov/open/license"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: false
+      share_alike_required: false
+      licence_status: VERIFIED_REUSABLE
+      attribution_statement: "Source: NIST SP 800-161r1. NIST does not endorse this product."
+    documents:
+      - document_key: sp800161_oscal
+        document_name: "SP 800-161r1 C-SCRM controls (800-53 profile + supplemental guidance)"
+        official_url: "https://csrc.nist.gov/pubs/sp/800/161/r1/final"
+        machine_readable_url: "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-161/"
+        source_format: pdf
+        retrieval:
+          mode: local_file
+          path: "NIST.SP.800-161r1-upd1.pdf"
+    ingestion_status: SOURCE_RETRIEVAL_BLOCKED
+    parser: nist_oscal
+    notes: >
+      Expressed largely as a profile/overlay of SP 800-53 with C-SCRM enhancements.
+      Cross-reference to nist_sp_800_53 rather than duplicating controls. Pending.
+
+  # ---------------------------------------------------------------------------
+  # 17. SINGAPORE AI VERIFY
+  # ---------------------------------------------------------------------------
+  - framework_key: singapore_ai_verify
+    framework_family: "Singapore AI Verify"
+    framework_name: "AI Verify Testing Framework (governance testing framework + process checks)"
+    authority: "AI Verify Foundation / Infocomm Media Development Authority (IMDA), Singapore"
+    jurisdiction: "Singapore (voluntary)"
+    framework_type: VOLUNTARY_FRAMEWORK
+    version_label: "2023"
+    canonical_identifier: "AI-VERIFY-TF-2023"
+    publication_date: "2023-06-07"
+    effective_date: "2023-06-07"
+    licence:
+      copyright_owner: "© AI Verify Foundation"
+      licence_name: "Apache License 2.0 (aiverify-foundation/aiverify, incl. stock process-checklist plugin)"
+      licence_url: "https://github.com/aiverify-foundation/aiverify/blob/main/LICENSE"
+      commercial_reuse_allowed: true
+      redistribution_allowed: true
+      modification_allowed: true
+      attribution_required: true
+      share_alike_required: false
+      third_party_material_present: true
+      licence_status: VERIFIED_WITH_ATTRIBUTION
+      attribution_statement: >
+        Source: AI Verify Testing Framework process checklist, AI Verify Foundation /
+        IMDA Singapore, licensed Apache-2.0. This platform is not affiliated with or
+        endorsed by the AI Verify Foundation and this is not an AI Verify certification.
+    documents:
+      - document_key: aiverify_process_checklist
+        document_name: "AI Verify stock process-checklist plugin (config_*.ts, 12 governance principles)"
+        official_url: "https://aiverifyfoundation.sg/what-is-ai-verify/"
+        machine_readable_url: "https://github.com/aiverify-foundation/aiverify/tree/main/stock-plugins/aiverify.stock.process-checklist/inputs"
+        source_format: json
+        retrieval:
+          mode: github_bundle
+          repo: aiverify-foundation/aiverify
+          ref_mode: latest_tag
+          path_prefix: stock-plugins/aiverify.stock.process-checklist/inputs
+          files:
+            - config_accountability.ts
+            - config_data_governance.ts
+            - config_explainability.ts
+            - config_fairness.ts
+            - config_human_agency_oversight.ts
+            - config_inclusive_growth_soc_env.ts
+            - config_organisational_considerations.ts
+            - config_reproducibility.ts
+            - config_robustness.ts
+            - config_safety.ts
+            - config_security.ts
+            - config_transparency.ts
+    ingestion_status: READY_MACHINE_READABLE
+    parser: aiverify
+    notes: >
+      Governance Testing Framework process checks ingested from the official
+      aiverify stock process-checklist plugin (Apache-2.0), latest tag resolved
+      dynamically (repo + tag + SHA-256 recorded). AI Verify software toolkit,
+      technical test engine and Model AI Governance Framework (PDPC) are tracked
+      separately; a technical-test adapter is scaffolded in
+      aegis_app/regulatory/aiverify_adapter.py.

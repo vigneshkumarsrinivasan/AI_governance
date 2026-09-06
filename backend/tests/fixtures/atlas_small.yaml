@@ -1,0 +1,272 @@
+id: ATLAS
+name: Adversarial Threat Landscape for AI Systems
+version: 5.6.0
+matrices:
+- id: ATLAS
+  name: ATLAS Matrix
+  tactics:
+  - id: AML.TA0002
+    name: Reconnaissance
+    description: 'The adversary is trying to gather information about the AI system
+      they can use to plan future operations.
+
+
+      Reconnaissance consists of techniques that involve adversaries actively or passively
+      gathering information that can be used to support targeting.
+
+      Such information may include details of the victim organizations'' AI capabilities
+      and research efforts.
+
+      This information can be leveraged by the adversary to aid in other phases of
+      the adversary lifecycle, such as using gathered information to obtain relevant
+      AI artifacts, targeting AI capabilities used by the victim, tailoring attacks
+      to the particular models used by the victim, or to drive and lead further Reconnaissance
+      efforts.'
+    object-type: tactic
+    ATT&CK-reference:
+      id: TA0043
+      url: https://attack.mitre.org/tactics/TA0043/
+    created_date: 2022-01-24
+    modified_date: 2025-04-09
+  - id: AML.TA0000
+    name: AI Model Access
+    description: 'The adversary is attempting to gain some level of access to an AI
+      model.
+
+
+      AI Model Access enables techniques that use various types of access to the AI
+      model that can be used by the adversary to gain information, develop attacks,
+      and as a means to input data to the model.
+
+      The level of access can range from the full knowledge of the internals of the
+      model to access to the physical environment where data is collected for use
+      in the AI model.
+
+      The adversary may use varying levels of model access during the course of their
+      attack, from staging the attack to impacting the target system.
+
+
+      Access to an AI model may require access to the system housing the model, the
+      model may be publicly accessible via an API, or it may be accessed indirectly
+      via interaction with a product or service that utilizes AI as part of its processes.'
+    object-type: tactic
+    created_date: 2021-05-13
+    modified_date: 2025-10-13
+  techniques:
+  - id: AML.T0000
+    name: Search Open Technical Databases
+    description: 'Adversaries may search for publicly available research and technical
+      documentation to learn how and where AI is used within a victim organization.
+
+      The adversary can use this information to identify targets for attack, or to
+      tailor an existing attack to make it more effective.
+
+      Organizations often use open source model architectures trained on additional
+      proprietary data in production.
+
+      Knowledge of this underlying architecture allows the adversary to craft more
+      realistic proxy models ([Create Proxy AI Model](/techniques/AML.T0005)).
+
+      An adversary can search these resources for publications for authors employed
+      at the victim organization.
+
+
+      Research and technical materials may exist as academic papers published in [Journals
+      and Conference Proceedings](/techniques/AML.T0000.000), or stored in [Pre-Print
+      Repositories](/techniques/AML.T0000.001), as well as [Technical Blogs](/techniques/AML.T0000.002).'
+    object-type: technique
+    ATT&CK-reference:
+      id: T1596
+      url: https://attack.mitre.org/techniques/T1596/
+    tactics:
+    - AML.TA0002
+    created_date: 2021-05-13
+    modified_date: 2025-04-09
+    maturity: demonstrated
+  - id: AML.T0000.000
+    name: Journals and Conference Proceedings
+    description: 'Many of the publications accepted at premier artificial intelligence
+      conferences and journals come from commercial labs.
+
+      Some journals and conferences are open access, others may require paying for
+      access or a membership.
+
+      These publications will often describe in detail all aspects of a particular
+      approach for reproducibility.
+
+      This information can be used by adversaries to implement the paper.'
+    object-type: technique
+    specializes: AML.T0000
+    created_date: 2021-05-13
+    modified_date: 2025-04-09
+    maturity: feasible
+  - id: AML.T0002
+    name: Acquire Public AI Artifacts
+    description: 'Adversaries may search public sources, including cloud storage,
+      public-facing services, and software or data repositories, to identify AI artifacts.
+
+      These AI artifacts may include the software stack used to train and deploy models,
+      training and testing data, model configurations and parameters.
+
+      An adversary will be particularly interested in artifacts hosted by or associated
+      with the victim organization as they may represent what that organization uses
+      in a production environment.
+
+      Adversaries may identify artifact repositories via other resources associated
+      with the victim organization (e.g. [Search Victim-Owned Websites](/techniques/AML.T0003)
+      or [Search Open Technical Databases](/techniques/AML.T0000)).
+
+      These AI artifacts often provide adversaries with details of the AI task and
+      approach.
+
+
+      AI artifacts can aid in an adversary''s ability to [Create Proxy AI Model](/techniques/AML.T0005).
+
+      If these artifacts include pieces of the actual model in production, they can
+      be used to directly [Craft Adversarial Data](/techniques/AML.T0043).
+
+      Acquiring some artifacts requires registration (providing user details such
+      email/name), AWS keys, or written requests, and may require the adversary to
+      [Establish Accounts](/techniques/AML.T0021).
+
+
+      Artifacts might be hosted on victim-controlled infrastructure, providing the
+      victim with some information on who has accessed that data.'
+    object-type: technique
+    tactics:
+    - AML.TA0003
+    created_date: 2021-05-13
+    modified_date: 2025-04-09
+    maturity: realized
+  - id: AML.T0040
+    name: AI Model Inference API Access
+    description: 'Adversaries may gain access to a model via legitimate access to
+      the inference API.
+
+      Inference API access can be a source of information to the adversary ([Discover
+      AI Model Ontology](/techniques/AML.T0013), [Discover AI Model Family](/techniques/AML.T0014)),
+      a means of staging the attack ([Verify Attack](/techniques/AML.T0042), [Craft
+      Adversarial Data](/techniques/AML.T0043)), or for introducing data to the target
+      system for Impact ([Evade AI Model](/techniques/AML.T0015), [Erode AI Model
+      Integrity](/techniques/AML.T0031)).
+
+
+      Many systems rely on the same models provided via an inference API, which means
+      they share the same vulnerabilities. This is especially true of foundation models
+      which are prohibitively resource intensive to train. Adversaries may use their
+      access to model APIs to identify vulnerabilities such as jailbreaks or hallucinations
+      and then target applications that use the same models.'
+    object-type: technique
+    tactics:
+    - AML.TA0000
+    created_date: 2021-05-13
+    modified_date: 2025-03-12
+    maturity: realized
+  mitigations:
+  - id: AML.M0000
+    name: Limit Public Release of Information
+    description: Limit the public release of technical information about the AI stack
+      used in an organization's products or services. Technical knowledge of how AI
+      is used can be leveraged by adversaries to perform targeting and tailor attacks
+      to the target system. Additionally, consider limiting the release of organizational
+      information - including physical locations, researcher names, and department
+      structures - from which technical details such as AI techniques, model architectures,
+      or datasets may be inferred.
+    object-type: mitigation
+    techniques:
+    - id: AML.T0000
+      use: 'Limit the connection between publicly disclosed approaches and the data,
+        models, and algorithms used in production.
+
+        '
+    - id: AML.T0003
+      use: 'Restrict release of technical information on ML-enabled products and organizational
+        information on the teams supporting ML-enabled products.
+
+        '
+    - id: AML.T0002
+      use: 'Limit the release of sensitive information in the metadata of deployed
+        systems and publicly available applications.
+
+        '
+    - id: AML.T0004
+      use: 'Limit the release of sensitive information in the metadata of deployed
+        systems and publicly available applications.
+
+        '
+    - id: AML.T0005
+      use: Limiting release of technical information about a model and training data
+        can reduce an adversary's ability to create an accurate proxy model.
+    - id: AML.T0005.000
+      use: Limiting release of technical information about a model and training data
+        can reduce an adversary's ability to create an accurate proxy model.
+    - id: AML.T0005.002
+      use: Limiting release of technical information about a model and training data
+        can reduce an adversary's ability to create an accurate proxy model.
+    ml-lifecycle:
+    - Business and Data Understanding
+    category:
+    - Policy
+    created_date: 2023-04-12
+    modified_date: 2025-12-23
+case-studies:
+- id: AML.CS0000
+  name: Evasion of Deep Learning Detector for Malware C&C Traffic
+  object-type: case-study
+  summary: 'The Palo Alto Networks Security AI research team tested a deep learning
+    model for malware command and control (C&C) traffic detection in HTTP traffic.
+
+    Based on the publicly available [paper by Le et al.](https://arxiv.org/abs/1802.03162),
+    we built a model that was trained on a similar dataset as our production model
+    and had similar performance.
+
+    Then we crafted adversarial samples, queried the model, and adjusted the adversarial
+    sample accordingly until the model was evaded.'
+  incident-date: 2020-01-01
+  incident-date-granularity: YEAR
+  procedure:
+  - tactic: AML.TA0002
+    technique: AML.T0000.001
+    description: 'We identified a machine learning based approach to malicious URL
+      detection as a representative approach and potential target from the paper [URLNet:
+      Learning a URL representation with deep learning for malicious URL detection](https://arxiv.org/abs/1802.03162),
+      which was found on arXiv (a pre-print repository).'
+  - tactic: AML.TA0003
+    technique: AML.T0002.000
+    description: We acquired a command and control HTTP traffic  dataset consisting
+      of approximately 33 million benign and 27 million malicious HTTP packet headers.
+  - tactic: AML.TA0001
+    technique: AML.T0005
+    description: 'We trained a model on the HTTP traffic dataset to use as a proxy
+      for the target model.
+
+      Evaluation showed a true positive rate of ~ 99% and false positive rate of ~
+      0.01%, on average.
+
+      Testing the model with a HTTP packet header from known malware command and control
+      traffic samples was detected as malicious with high confidence (> 99%).'
+  - tactic: AML.TA0001
+    technique: AML.T0043.003
+    description: We crafted evasion samples by removing fields from packet header
+      which are typically not used for C&C communication (e.g. cache-control, connection,
+      etc.).
+  - tactic: AML.TA0001
+    technique: AML.T0042
+    description: We queried the model with our adversarial examples and adjusted them
+      until the model was evaded.
+  - tactic: AML.TA0007
+    technique: AML.T0015
+    description: 'With the crafted samples, we performed online evasion of the ML-based
+      spyware detection model.
+
+      The crafted packets were identified as benign with > 80% confidence.
+
+      This evaluation demonstrates that adversaries are able to bypass advanced ML
+      detection techniques, by crafting samples that are misclassified by an ML model.'
+  target: Palo Alto Networks malware detection system
+  actor: Palo Alto Networks AI Research Team
+  case-study-type: exercise
+  references:
+  - title: 'Le, Hung, et al. "URLNet: Learning a URL representation with deep learning
+      for malicious URL detection." arXiv preprint arXiv:1802.03162 (2018).'
+    url: https://arxiv.org/abs/1802.03162

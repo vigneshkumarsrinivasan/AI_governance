@@ -10,11 +10,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from aegis_app.core.config import settings, validate_production_settings
 from aegis_app.core.database import engine, Base
+from aegis_app.models import models, regulatory  # noqa: F401  (register all tables on Base.metadata)
 from aegis_app.api import (
     auth, ai_systems, frameworks, controls, crosswalk,
     assessments, evidence, risks, security, copilot,
     dashboard, reports, audit,
-    model_registry, agent_registry, vendor_registry, org_structure, graph
+    model_registry, agent_registry, vendor_registry, org_structure, graph,
+    regulatory as regulatory_api,
 )
 from aegis_app.seed.demo_data import seed_demo_data
 
@@ -89,6 +91,7 @@ app.include_router(agent_registry.router, prefix=api_v1_prefix)
 app.include_router(vendor_registry.router, prefix=api_v1_prefix)
 app.include_router(org_structure.router, prefix=api_v1_prefix)
 app.include_router(graph.router, prefix=api_v1_prefix)
+app.include_router(regulatory_api.router, prefix=api_v1_prefix)
 
 @app.get("/")
 async def root():

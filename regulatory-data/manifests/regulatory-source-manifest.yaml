@@ -1,0 +1,204 @@
+generated_at: '2026-09-06T03:18:33.052728+00:00'
+workspace_root: C:\Users\reach\OneDrive\project\AI governance
+note: Operator-supplied source documents are immutable input. Hashes recorded here are reconciled by the
+  ingestion pipeline; each ingested framework also stores its own SourceArtifact (URL/hash/timestamp)
+  in the database.
+documents_found: 15
+unidentified: []
+by_framework:
+  dora:
+  - DORA.docx
+  eu_ai_act:
+  - EU AI Act.docx
+  eu_cra:
+  - EU CRA.docx
+  gdpr:
+  - GDPR.docx
+  india_dpdp:
+  - DPDP_Rules_2025_English_only.pdf
+  nis2:
+  - NIS2.docx
+  nist_ai_600_1:
+  - NIST.AI.600-1.pdf
+  nist_ai_rmf:
+  - NIST.AI.100-1.pdf
+  nist_csf_2:
+  - NIST.CSWP.29.pdf
+  nist_sp_800_161:
+  - NIST.SP.800-161r1-upd1.pdf
+  nist_sp_800_218:
+  - NIST.SP.800-218.pdf
+  nist_sp_800_218a:
+  - NIST.SP.800-218A.pdf
+  owasp_agentic_ai:
+  - OWASP-Top-10-for-Agentic-Applications-2026-12.6-1.pdf
+  owasp_llm:
+  - OWASP-GenAI-LLM-Top-10-2026-v1.0.pdf
+  uk_ai_cyber_code:
+  - Implementation_Guide_for_the_AI_Cyber_Security_Code_of_Practice.pdf
+documents:
+- filename: DORA.docx
+  local_path: DORA.docx
+  extension: docx
+  size_bytes: 143706
+  sha256: 4e8af0689a9f0693b67d5e22720f74bb00780d6e62cf5c6de9a781e6ce628bdb
+  detected_framework: dora
+  authority: European Union
+  manifest_version: 2022/2554
+  manifest_licence_status: VERIFIED_WITH_ATTRIBUTION
+  manifest_parser: eu_docx
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: DPDP_Rules_2025_English_only.pdf
+  local_path: DPDP_Rules_2025_English_only.pdf
+  extension: pdf
+  size_bytes: 375007
+  sha256: 63bc7ca508ae4ebbbbf8731d336914d94ee6067e918b719d019193371fcc0763
+  detected_framework: india_dpdp
+  authority: Government of India (MeitY)
+  manifest_version: Rules 2025
+  manifest_licence_status: UNKNOWN
+  manifest_parser: dpdp_pdf
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: EU AI Act.docx
+  local_path: EU AI Act.docx
+  extension: docx
+  size_bytes: 251086
+  sha256: 26e478105fd5cd87a499c9317b475b188b608bff18548342c0cefacc70d31d81
+  detected_framework: eu_ai_act
+  authority: European Union
+  manifest_version: 2024/1689
+  manifest_licence_status: VERIFIED_WITH_ATTRIBUTION
+  manifest_parser: eu_docx
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: EU CRA.docx
+  local_path: EU CRA.docx
+  extension: docx
+  size_bytes: 145674
+  sha256: 31753cb03573a2ee8f4991c5e0352b6cfc34e9207f4e97870018cba30e9696ba
+  detected_framework: eu_cra
+  authority: European Union
+  manifest_version: 2024/2847
+  manifest_licence_status: VERIFIED_WITH_ATTRIBUTION
+  manifest_parser: eu_docx
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: GDPR.docx
+  local_path: GDPR.docx
+  extension: docx
+  size_bytes: 153782
+  sha256: 0d3a1b2473eedab875543d20a7f1fa3232ad8a8a52b510d151c1b653615c2a9e
+  detected_framework: gdpr
+  authority: European Union
+  manifest_version: 2016/679
+  manifest_licence_status: VERIFIED_WITH_ATTRIBUTION
+  manifest_parser: eu_docx
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: Implementation_Guide_for_the_AI_Cyber_Security_Code_of_Practice.pdf
+  local_path: Implementation_Guide_for_the_AI_Cyber_Security_Code_of_Practice.pdf
+  extension: pdf
+  size_bytes: 1011888
+  sha256: 5d4c961cc811dc67c230ffbb9fa981629e30e862b83c6e47f7a0bfc4d412594e
+  detected_framework: uk_ai_cyber_code
+  authority: UK DSIT
+  manifest_version: 2025-01
+  manifest_licence_status: VERIFIED_WITH_ATTRIBUTION
+  manifest_parser: uk_pdf
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: NIS2.docx
+  local_path: NIS2.docx
+  extension: docx
+  size_bytes: 138045
+  sha256: 98086ae2ee03608d8fb074405e071215d2fbb022e44c2cff4d5e1eb4f0215e2b
+  detected_framework: nis2
+  authority: European Union
+  manifest_version: 2022/2555
+  manifest_licence_status: VERIFIED_WITH_ATTRIBUTION
+  manifest_parser: eu_docx
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: NIST.AI.100-1.pdf
+  local_path: NIST.AI.100-1.pdf
+  extension: pdf
+  size_bytes: 1946127
+  sha256: 7576edb531d9848825814ee88e28b1795d3a84b435b4b797d3670eafdc4a89f1
+  detected_framework: nist_ai_rmf
+  authority: NIST
+  manifest_version: '1.0'
+  manifest_licence_status: VERIFIED_REUSABLE
+  manifest_parser: nist_ai_rmf_pdf
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: NIST.AI.600-1.pdf
+  local_path: NIST.AI.600-1.pdf
+  extension: pdf
+  size_bytes: 1174643
+  sha256: 6e73620ab6b64e90ef2c04bf0e0d6246185a2f4b1b13cab0df494496cff89b6a
+  detected_framework: nist_ai_600_1
+  authority: NIST
+  manifest_version: 600-1 (2024)
+  manifest_licence_status: VERIFIED_REUSABLE
+  manifest_parser: nist_ai_600_1_pdf
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: NIST.CSWP.29.pdf
+  local_path: NIST.CSWP.29.pdf
+  extension: pdf
+  size_bytes: 1518858
+  sha256: 3c31f46fee98cac0c4323453e5109291a213b4de7fef8c058af9bf67f717433c
+  detected_framework: nist_csf_2
+  authority: NIST
+  manifest_version: '2.0'
+  manifest_licence_status: VERIFIED_REUSABLE
+  manifest_parser: nist_csf
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: NIST.SP.800-161r1-upd1.pdf
+  local_path: NIST.SP.800-161r1-upd1.pdf
+  extension: pdf
+  size_bytes: 3511556
+  sha256: d2bacbf4053adbbe11628f74f071077d8fd59ba99754a3aab34d7813c1cb3d40
+  detected_framework: nist_sp_800_161
+  authority: NIST
+  manifest_version: Rev 1
+  manifest_licence_status: VERIFIED_REUSABLE
+  manifest_parser: nist_oscal
+  manifest_ingestion_status: SOURCE_RETRIEVAL_BLOCKED
+- filename: NIST.SP.800-218.pdf
+  local_path: NIST.SP.800-218.pdf
+  extension: pdf
+  size_bytes: 739891
+  sha256: 617746e553a9e2da49bfbd4eef0dfc3094758a39b869314e4173ac36605cde22
+  detected_framework: nist_sp_800_218
+  authority: NIST
+  manifest_version: '1.1'
+  manifest_licence_status: VERIFIED_REUSABLE
+  manifest_parser: nist_ssdf
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: NIST.SP.800-218A.pdf
+  local_path: NIST.SP.800-218A.pdf
+  extension: pdf
+  size_bytes: 650661
+  sha256: e088c8bc75716824dae7c36a987f408364638561d381ed001b5c12254a7b10d8
+  detected_framework: nist_sp_800_218a
+  authority: NIST
+  manifest_version: null
+  manifest_licence_status: null
+  manifest_parser: null
+  manifest_ingestion_status: null
+- filename: OWASP-GenAI-LLM-Top-10-2026-v1.0.pdf
+  local_path: OWASP-GenAI-LLM-Top-10-2026-v1.0.pdf
+  extension: pdf
+  size_bytes: 2402520
+  sha256: ef87993a4e50ae9d83b41ff7a3d3e6320a82dfa8d4ec6bf98d0ce264b2e6108e
+  detected_framework: owasp_llm
+  authority: OWASP Foundation
+  manifest_version: '2026'
+  manifest_licence_status: VERIFIED_SHARE_ALIKE
+  manifest_parser: owasp_pdf
+  manifest_ingestion_status: READY_MACHINE_READABLE
+- filename: OWASP-Top-10-for-Agentic-Applications-2026-12.6-1.pdf
+  local_path: OWASP-Top-10-for-Agentic-Applications-2026-12.6-1.pdf
+  extension: pdf
+  size_bytes: 1274186
+  sha256: a2db94cd00b08e0b3a5e5b619afe024bdbcd74503111085705e4f3dd886fcb5c
+  detected_framework: owasp_agentic_ai
+  authority: OWASP Foundation
+  manifest_version: '2026'
+  manifest_licence_status: VERIFIED_SHARE_ALIKE
+  manifest_parser: owasp_pdf
+  manifest_ingestion_status: READY_MACHINE_READABLE

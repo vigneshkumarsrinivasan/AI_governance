@@ -23,6 +23,16 @@ next-env.d.ts
 .env.local
 .env.*.local
 
+# Regulatory source archive - large raw downloads, regenerable + SHA-256 verified.
+# The DB stores the hash/URL/timestamp; re-fetch with `python -m aegis_app.regulatory.ingest`.
+backend/aegis_app/regulatory/sources_archive/
+backend/tests/test_evidence_storage/
+
+# Operator-supplied regulatory source documents (immutable input, not code).
+# Inventoried + hashed into regulatory-data/manifests/regulatory-source-manifest.yaml.
+/*.docx
+/*.pdf
+
 # OS / editor
 .DS_Store
 Thumbs.db

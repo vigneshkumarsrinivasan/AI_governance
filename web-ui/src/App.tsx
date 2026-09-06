@@ -169,7 +169,11 @@ export default function App() {
   // Data states
   const [metrics, setMetrics] = useState<any>(null);
   const [aiSystems, setAiSystems] = useState<any[]>([]);
-  const [frameworks, setFrameworks] = useState<any[]>([]);
+  const [regFrameworks, setRegFrameworks] = useState<any[]>([]);
+  const [regDetail, setRegDetail] = useState<any | null>(null);
+  const [regRequirements, setRegRequirements] = useState<any[]>([]);
+  const [regReqDetail, setRegReqDetail] = useState<any | null>(null);
+  const [regLoading, setRegLoading] = useState<boolean>(false);
   const [controls, setControls] = useState<any[]>([]);
   const [crosswalk, setCrosswalk] = useState<any[]>([]);
   const [evidenceList, setEvidenceList] = useState<any[]>([]);
@@ -242,12 +246,12 @@ export default function App() {
       setError(null);
 
       const [
-        dashData, systemsData, fwData, ctrlData, cwData, evData,
+        dashData, systemsData, regFwData, ctrlData, cwData, evData,
         agentData, vndData, riskData, findData, remData, auditData, assData
       ] = await Promise.all([
         api.getDashboardMetrics(),
         api.getAISystems(),
-        api.getFrameworks(),
+        api.getRegulatoryFrameworks().catch(() => []),
         api.getControls(),
         api.getCrosswalkMatrix(),
         api.getEvidence(),
@@ -262,7 +266,7 @@ export default function App() {
 
       setMetrics(dashData);
       setAiSystems(systemsData);
-      setFrameworks(fwData);
+      setRegFrameworks(regFwData || []);
       setControls(ctrlData);
       setCrosswalk(cwData);
       setEvidenceList(evData);
@@ -291,6 +295,31 @@ export default function App() {
   useEffect(() => {
     if (copilotEndRef.current) copilotEndRef.current.scrollIntoView({ behavior: "smooth" });
   }, [copilotMessages]);
+
+  const openRegFramework = async (key: string) => {
+    setRegLoading(true);
+    setRegReqDetail(null);
+    try {
+      const [detail, reqs] = await Promise.all([
+        api.getRegulatoryFramework(key),
+        api.getRegulatoryRequirements(key).catch(() => []),
+      ]);
+      setRegDetail(detail);
+      setRegRequirements(reqs || []);
+    } catch (err: any) {
+      alert("Failed to load framework: " + err.message);
+    } finally {
+      setRegLoading(false);
+    }
+  };
+
+  const openRegRequirement = async (requirementKey: string) => {
+    try {
+      setRegReqDetail(await api.getRegulatoryRequirementDetail(requirementKey));
+    } catch (err: any) {
+      alert("Failed to load requirement: " + err.message);
+    }
+  };
 
   const runIntakeEvaluation = async () => {
     try {
@@ -1186,46 +1215,131 @@ export default function App() {
               {/* ══════════════════════════════════════════════════════
                   TAB: AUTHORITATIVE FRAMEWORKS
               ══════════════════════════════════════════════════════ */}
-              {activeTab === "frameworks" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div>
-                    <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "10px", letterSpacing: "-0.02em" }}>
-                      <FileCheck style={{ width: "22px", height: "22px", color: "#38BDF8" }} />
-                      Authoritative Regulatory & Cybersecurity Frameworks
-                    </h1>
-                    <p style={{ fontSize: "12px", color: "#64748B", marginTop: "4px" }}>
-                      {frameworks.length} frameworks ingested from publicly accessible, legally usable sources: EUR-Lex, NIST, OWASP, MITRE ATLAS, UK Gov, India Gazette, IMDA.
-                    </p>
-                  </div>
+              {activeTab === "frameworks" && (() => {
+                const list = (regFrameworks && regFrameworks.length) ? regFrameworks : [];
+                const totalReqs = list.reduce((s: number, f: any) => s + (f.requirement_count || 0), 0);
+                const totalNodes = list.reduce((s: number, f: any) => s + (f.hierarchy_node_count || 0), 0);
+                const nValidated = list.filter((f: any) => f.production_status === "VALIDATED").length;
+                const statusColor = (st: string) => st === "VALIDATED" ? "#34D399" : st === "PARTIAL" ? "#FBBF24" : st === "PRODUCTION_READY" ? "#38BDF8" : "#F87171";
+                const licColor = (st: string) => (st || "").startsWith("VERIFIED") ? "#34D399" : "#FBBF24";
 
-                  <div className="stagger-children" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "14px" }}>
-                    {frameworks.map(fw => {
-                      const accentMap: Record<string, string> = { "EU": "fw-card-accent-eu", "US": "fw-card-accent-us", "UK": "fw-card-accent-security", "Global Security": "fw-card-accent-security", "Global Privacy": "fw-card-accent-privacy", "Financial": "fw-card-accent-financial" };
-                      const cls = accentMap[fw.jurisdiction] || "fw-card-accent-eu";
-                      return (
-                        <div key={fw.id} className={`glass-panel glass-panel-hover ${cls}`} style={{ padding: "18px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                if (regDetail) {
+                  const d = regDetail;
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                      <button onClick={() => { setRegDetail(null); setRegRequirements([]); setRegReqDetail(null); }}
+                        style={{ alignSelf: "flex-start", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8", padding: "6px 12px", borderRadius: "8px", fontSize: "11px", cursor: "pointer" }}>
+                        ← All frameworks
+                      </button>
+                      <div className="glass-panel" style={{ padding: "20px" }}>
+                        <h1 style={{ fontSize: "18px", fontWeight: 800, color: "#fff" }}>{d.framework_name}</h1>
+                        <div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "4px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                          <span>{d.authority}</span><span>{d.jurisdiction}</span>
+                          <span style={{ fontFamily: "var(--font-mono)" }}>v{d.version_label}</span>
+                          <span style={{ color: statusColor(d.production_status), fontWeight: 700 }}>{d.production_status}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: "20px", marginTop: "14px", flexWrap: "wrap", fontSize: "11px" }}>
+                          {Object.entries(d.expected_counts || {}).filter(([k]) => !k.startsWith("_")).map(([k, v]) => (
+                            <div key={k}><div style={{ color: "#fff", fontWeight: 700, fontSize: "15px" }}>{String(v)}</div><div style={{ color: "#64748B" }}>{k.replace(/_/g, " ")}</div></div>
+                          ))}
+                        </div>
+                        <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid rgba(255,255,255,0.08)", fontSize: "10px", color: "#64748B", fontFamily: "var(--font-mono)", wordBreak: "break-all" }}>
+                          source: {d.source?.retrieved_url} · sha256: {d.source?.sha256} · {d.source?.byte_size} bytes
+                          {d.attribution ? <div style={{ marginTop: "4px", color: "#475569" }}>{d.attribution}</div> : null}
+                        </div>
+                        {(d.blocking_reasons || []).length ? (
+                          <div style={{ marginTop: "10px", fontSize: "10px", color: "#FBBF24" }}>
+                            Not production-ready: {d.blocking_reasons.join(" · ")}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: regReqDetail ? "1fr 1fr" : "1fr", gap: "14px" }}>
+                        <div className="glass-panel" style={{ padding: "14px", maxHeight: "560px", overflowY: "auto" }}>
+                          <div style={{ fontSize: "12px", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>{regRequirements.length} normalized requirements</div>
+                          {regLoading ? <div style={{ color: "#64748B", fontSize: "11px" }}>Loading…</div> : null}
+                          {regRequirements.map((r: any) => (
+                            <div key={r.requirement_key} onClick={() => openRegRequirement(r.requirement_key)}
+                              style={{ padding: "9px 10px", borderRadius: "8px", cursor: "pointer", marginBottom: "5px", background: regReqDetail?.requirement_key === r.requirement_key ? "rgba(56,189,248,0.12)" : "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", gap: "8px" }}>
+                                <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "#38BDF8" }}>{r.source_reference}</span>
+                                <span style={{ fontSize: "9px", color: "#64748B" }}>{r.obligation_type}</span>
+                              </div>
+                              <div style={{ fontSize: "11px", color: "#CBD5E1", marginTop: "3px", lineHeight: "1.5" }}>{(r.normalized_requirement || "").slice(0, 180)}</div>
+                            </div>
+                          ))}
+                        </div>
+                        {regReqDetail ? (
+                          <div className="glass-panel" style={{ padding: "16px", maxHeight: "560px", overflowY: "auto" }}>
+                            <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "#38BDF8" }}>{regReqDetail.source_reference} · {regReqDetail.obligation_type}</div>
+                            <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", marginTop: "12px", letterSpacing: "0.05em" }}>Official source text</div>
+                            <p style={{ fontSize: "12px", color: "#E2E8F0", lineHeight: "1.65", marginTop: "4px", whiteSpace: "pre-wrap" }}>{regReqDetail.source_text || "(not reproduced under this licence)"}</p>
+                            <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", marginTop: "14px", letterSpacing: "0.05em" }}>Platform interpretation</div>
+                            <p style={{ fontSize: "12px", color: "#94A3B8", lineHeight: "1.6", marginTop: "4px" }}>{regReqDetail.normalized_requirement}</p>
+                            {(regReqDetail.evidence_expectations || []).length ? (
+                              <div style={{ marginTop: "14px" }}>
+                                <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em" }}>Expected evidence</div>
+                                <ul style={{ margin: "4px 0 0", paddingLeft: "16px" }}>
+                                  {regReqDetail.evidence_expectations.map((e: any, i: number) => (
+                                    <li key={i} style={{ fontSize: "11px", color: "#94A3B8", marginTop: "3px" }}><b style={{ color: "#CBD5E1" }}>{e.type}:</b> {e.description}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : null}
+                            <div style={{ marginTop: "14px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.08)", fontSize: "10px", color: "#64748B" }}>
+                              <div>{regReqDetail.official_source?.authority}</div>
+                              <div style={{ fontFamily: "var(--font-mono)", wordBreak: "break-all", marginTop: "2px" }}>sha256: {regReqDetail.official_source?.sha256}</div>
+                              <a href={regReqDetail.official_source?.official_url} target="_blank" rel="noopener noreferrer" style={{ color: "#38BDF8", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px", marginTop: "4px" }}>
+                                Open official source <ExternalLink style={{ width: "10px", height: "10px" }} />
+                              </a>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div>
+                      <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "10px", letterSpacing: "-0.02em" }}>
+                        <FileCheck style={{ width: "22px", height: "22px", color: "#38BDF8" }} />
+                        Authoritative Regulatory & Cybersecurity Frameworks
+                      </h1>
+                      <p style={{ fontSize: "12px", color: "#64748B", marginTop: "4px" }}>
+                        {list.length} frameworks · <b style={{ color: "#34D399" }}>{nValidated} validated</b> · <b style={{ color: "#fff" }}>{totalReqs.toLocaleString()}</b> source-traceable requirements · {totalNodes.toLocaleString()} hierarchy nodes. Ingested from the documents in <span style={{ fontFamily: "var(--font-mono)" }}>AI governance/</span> + MITRE ATLAS &amp; AI Verify repos.
+                      </p>
+                    </div>
+
+                    <div className="stagger-children" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "14px" }}>
+                      {list.map((fw: any) => (
+                        <div key={fw.framework_key} onClick={() => fw.requirement_count ? openRegFramework(fw.framework_key) : null}
+                          className="glass-panel glass-panel-hover fw-card-accent-eu"
+                          style={{ padding: "18px", display: "flex", flexDirection: "column", justifyContent: "space-between", cursor: fw.requirement_count ? "pointer" : "default", opacity: fw.requirement_count ? 1 : 0.55 }}>
                           <div>
                             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", marginBottom: "6px" }}>
                               <span style={{ color: "#38BDF8", fontWeight: 700, background: "rgba(56,189,248,0.1)", padding: "2px 8px", borderRadius: "10px", border: "1px solid rgba(56,189,248,0.2)" }}>{fw.jurisdiction}</span>
-                              <span style={{ color: "#64748B" }}>{fw.type}</span>
+                              <span style={{ color: statusColor(fw.production_status), fontWeight: 700 }}>{fw.production_status}</span>
                             </div>
-                            <h2 style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF", lineHeight: "1.3" }}>{fw.name}</h2>
-                            <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "#94A3B8", marginTop: "3px" }}>{fw.official_reference}</div>
-                            <p style={{ fontSize: "11px", color: "#64748B", marginTop: "8px", lineHeight: "1.6" }}>{fw.description}</p>
+                            <h2 style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF", lineHeight: "1.3" }}>{fw.framework_name}</h2>
+                            <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "#94A3B8", marginTop: "3px" }}>{fw.canonical_identifier || fw.framework_key} · v{fw.version_label}</div>
+                            <div style={{ fontSize: "10px", color: licColor(fw.licence_status), marginTop: "8px" }}>licence: {fw.licence_status}</div>
                           </div>
-
                           <div style={{ paddingTop: "12px", marginTop: "12px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "11px", color: "#34D399", fontWeight: 600 }}>{fw.requirement_count} Requirements</span>
-                            <a href={fw.official_url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", color: "#38BDF8", textDecoration: "none", fontWeight: 600 }}>
+                            <span style={{ fontSize: "11px", color: fw.requirement_count ? "#34D399" : "#64748B", fontWeight: 600 }}>
+                              {fw.requirement_count ? `${fw.requirement_count.toLocaleString()} Requirements` : "Not ingested"}
+                            </span>
+                            <a href={fw.official_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", color: "#38BDF8", textDecoration: "none", fontWeight: 600 }}>
                               Official Source <ExternalLink style={{ width: "11px", height: "11px" }} />
                             </a>
                           </div>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* ══════════════════════════════════════════════════════
                   TAB: ASSESSMENTS & READINESS

@@ -159,13 +159,46 @@ export async function evaluateIntake(payload: any) {
   });
 }
 
-// 3. Frameworks
+// 3. Frameworks (legacy crosswalk catalog)
 export async function getFrameworks() {
   return request<any[]>("/frameworks");
 }
 
 export async function getFrameworkDetail(frameworkId: string) {
   return request<any>(`/frameworks/${frameworkId}`);
+}
+
+// 3b. Regulatory content (source-traceable, ingested from the supplied documents)
+export async function getRegulatoryFrameworks() {
+  return request<any[]>("/regulatory/frameworks");
+}
+
+export async function getRegulatoryFramework(key: string) {
+  return request<any>(`/regulatory/frameworks/${encodeURIComponent(key)}`);
+}
+
+export async function getRegulatoryRequirements(key: string) {
+  return request<any[]>(`/regulatory/frameworks/${encodeURIComponent(key)}/requirements`);
+}
+
+export async function getRegulatoryTree(key: string) {
+  return request<any>(`/regulatory/frameworks/${encodeURIComponent(key)}/tree`);
+}
+
+export async function getRegulatoryValidation(key: string) {
+  return request<any>(`/regulatory/frameworks/${encodeURIComponent(key)}/validation`);
+}
+
+export async function getRegulatoryRequirementDetail(requirementKey: string) {
+  return request<any>(`/regulatory/requirements/${encodeURIComponent(requirementKey)}`);
+}
+
+export async function searchRegulatory(q: string) {
+  return request<any>(`/regulatory/search?q=${encodeURIComponent(q)}&limit=40`);
+}
+
+export async function getRegulatoryLicenses() {
+  return request<any[]>("/regulatory/licenses");
 }
 
 // 4. Controls & Crosswalk

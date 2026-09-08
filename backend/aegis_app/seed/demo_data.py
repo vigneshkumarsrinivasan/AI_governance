@@ -76,6 +76,15 @@ async def seed_demo_data():
         await session.flush()
         lead_user = created_users[0]
 
+        # Membership rows so the demo users appear in / can switch companies.
+        from aegis_app.models.models import OrganizationMembership
+        for u in created_users:
+            session.add(OrganizationMembership(
+                user_id=u.id, tenant_id=tenant.id, organization_id=org.id,
+                role=u.role, is_default=True,
+            ))
+        await session.flush()
+
         # 3. Third-Party AI Vendors
         vendors_data = [
             Vendor(

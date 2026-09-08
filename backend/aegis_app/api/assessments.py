@@ -13,9 +13,15 @@ from sqlalchemy.orm import selectinload
 from aegis_app.core.database import get_db
 from aegis_app.models.models import Assessment, AssessmentResponse, AISystem, User, AuditEvent
 from aegis_app.models.regulatory import FrameworkVersion, RegulatoryRequirement
-from aegis_app.schemas.schemas import AssessmentCreate, AssessmentResponseInput, AssessmentDetailResponse
+from aegis_app.schemas.schemas import (
+    AssessmentCreate, AssessmentResponseInput, AssessmentDetailResponse, AssessmentApprovalInput,
+)
 from aegis_app.services.crosswalk import crosswalk_service
 from aegis_app.api.deps import get_current_user
+from aegis_app.core import permissions as _perm
+from aegis_app.api.deps import require_roles
+
+require_assessment_approval = require_roles(sorted(set(_perm.LEGAL_REVIEW) | {"Tenant Admin", "AI Governance Lead", "CISO/Security"}))
 
 router = APIRouter(prefix="/assessments", tags=["Assessments"])
 
@@ -187,10 +193,71 @@ async def get_assessment(
         implementation_score=assessment.implementation_score,
         evidence_score=assessment.evidence_score,
         effectiveness_score=assessment.effectiveness_score,
+        approval_status=getattr(assessment, "approval_status", "NOT_SUBMITTED"),
+        submitted_by=getattr(assessment, "submitted_by", None),
+        approved_by=getattr(assessment, "approved_by", None),
+        approval_notes=getattr(assessment, "approval_notes", None),
         responses=responses_data,
         created_at=assessment.created_at,
         completed_at=assessment.completed_at
     )
+
+
+@router.post("/{assessment_id}/approval", response_model=Dict[str, Any])
+async def assessment_approval(
+    assessment_id: str,
+    payload: AssessmentApprovalInput,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Submit-for-approval / approve / reject an assessment (spec sections 23, 37).
+    'submit' is open to any tenant member; 'approve'/'reject' require an
+    approver role. Every transition is audited."""
+    assessment = (await db.execute(
+        select(Assessment).where(Assessment.id == assessment_id, Assessment.tenant_id == current_user.tenant_id)
+    )).scalars().first()
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+
+    now = datetime.now(timezone.utc)
+    before = assessment.approval_status
+
+    if payload.decision == "submit":
+        if assessment.approval_status in ("SUBMITTED", "APPROVED"):
+            raise HTTPException(status_code=409, detail=f"Assessment already {assessment.approval_status.lower()}")
+        assessment.approval_status = "SUBMITTED"
+        assessment.submitted_by = current_user.full_name
+        assessment.submitted_at = now
+        assessment.status = "Under Review"
+    else:
+        approver_roles = sorted(set(_perm.LEGAL_REVIEW) | {"Tenant Admin", "AI Governance Lead", "CISO/Security", "Compliance Manager"})
+        if current_user.role not in approver_roles and current_user.role != "Super Admin":
+            raise HTTPException(status_code=403, detail=f"Approval requires one of: {', '.join(approver_roles)}")
+        if assessment.approval_status != "SUBMITTED":
+            raise HTTPException(status_code=409, detail="Assessment must be submitted for approval first")
+        if payload.decision == "approve":
+            assessment.approval_status = "APPROVED"
+            assessment.approved_by = current_user.full_name
+            assessment.approved_at = now
+            assessment.status = "Completed"
+            assessment.completed_at = now
+        else:
+            assessment.approval_status = "REJECTED"
+            assessment.approved_by = current_user.full_name
+            assessment.approved_at = now
+            assessment.status = "In Progress"
+    assessment.approval_notes = payload.notes
+
+    db.add(AuditEvent(
+        tenant_id=current_user.tenant_id, actor_id=current_user.id, actor_email=current_user.email,
+        action=f"ASSESSMENT_{payload.decision.upper()}", object_type="Assessment", object_id=assessment.id,
+        changes={"from": before, "to": assessment.approval_status, "notes": payload.notes},
+    ))
+    await db.commit()
+    return {
+        "id": assessment.id, "approval_status": assessment.approval_status,
+        "status": assessment.status, "approved_by": assessment.approved_by,
+    }
 
 @router.put("/{assessment_id}/response", response_model=Dict[str, Any])
 async def submit_response(

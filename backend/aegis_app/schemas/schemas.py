@@ -261,9 +261,18 @@ class AssessmentDetailResponse(BaseModel):
     implementation_score: float
     evidence_score: float
     effectiveness_score: float
+    approval_status: str = "NOT_SUBMITTED"
+    submitted_by: Optional[str] = None
+    approved_by: Optional[str] = None
+    approval_notes: Optional[str] = None
     responses: List[Dict[str, Any]]
     created_at: datetime
     completed_at: Optional[datetime] = None
+
+
+class AssessmentApprovalInput(BaseModel):
+    decision: str = Field(pattern="^(submit|approve|reject)$")
+    notes: Optional[str] = None
 
 # ---------------------------------------------------------
 # Evidence Schemas (Multi-Control Satisfaction)

@@ -36,12 +36,22 @@ class Organization(Base):
     id = Column(String(36), primary_key=True, default=generate_uuid)
     tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String(255), nullable=False)
+    legal_name = Column(String(255), nullable=True)
+    website = Column(String(255), nullable=True)
+    company_type = Column(String(40), nullable=True)         # private | public | startup | sme | enterprise | ...
     industry = Column(String(100), default="Technology")
+    # ISO 3166-1 alpha-2 for new records ("IN"), free text tolerated for legacy ("United States").
     headquarters_country = Column(String(100), default="United States")
-    countries_operating = Column(JSON, default=list)  # ["US", "DE", "FR", "GB", "IN", "SG"]
+    countries_operating = Column(JSON, default=list)         # ["US", "DE", "FR", "GB", "IN", "SG"]
+    ai_deployment_countries = Column(JSON, default=list)
+    customer_countries = Column(JSON, default=list)
     employee_count = Column(Integer, default=500)
+    employee_range = Column(String(20), nullable=True)       # "1-10" | "11-50" | ...
     is_financial_institution = Column(Boolean, default=False)
     is_critical_infrastructure = Column(Boolean, default=False)
+    is_software_vendor = Column(Boolean, default=False)
+    processes_personal_data = Column(Boolean, default=True)
+    governance_contacts = Column(JSON, default=dict)         # {governance_lead, compliance_lead, security_lead, privacy_dpo, legal_contact}
     eu_market_exposure = Column(Boolean, default=True)
     # True only for the seeded sales-demo tenant (demo_data.py) - lets the UI
     # show a "DEMO" badge instead of guessing from the organization name.
@@ -391,6 +401,15 @@ class Assessment(Base):
     implementation_score = Column(Float, default=0.0)
     evidence_score = Column(Float, default=0.0)
     effectiveness_score = Column(Float, default=0.0)
+    # Approval workflow (spec sections 23, 37). NOT_SUBMITTED -> SUBMITTED ->
+    # OWNER_APPROVED -> COMPLIANCE_APPROVED -> (LEGAL_APPROVED) -> APPROVED,
+    # or REJECTED at any review step.
+    approval_status = Column(String(40), default="NOT_SUBMITTED", nullable=False)
+    submitted_by = Column(String(255), nullable=True)
+    submitted_at = Column(DateTime, nullable=True)
+    approved_by = Column(String(255), nullable=True)
+    approved_at = Column(DateTime, nullable=True)
+    approval_notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=utc_now)
     completed_at = Column(DateTime, nullable=True)
     
@@ -616,6 +635,25 @@ class ApplicabilityDecision(Base):
     framework_exposure = Column(JSON, default=list)
     # Facts we still need from the customer before applicability can be firmed up.
     open_questions = Column(JSON, default=list)
+
+
+class OrganizationMembership(Base):
+    """
+    A user's access to a company (tenant). One user can belong to several
+    companies with a different role in each (spec sections 1, 30, 31). The
+    user's *active* company is still User.tenant_id / User.organization_id /
+    User.role - switching company updates those. This table is the set of
+    companies the user is allowed to switch to.
+    """
+    __tablename__ = "organization_memberships"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id = Column(String(36), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    role = Column(String(50), default="Tenant Admin", nullable=False)
+    is_default = Column(Boolean, default=False)   # company selected at login when the active one is gone
+    created_at = Column(DateTime, default=utc_now)
 
 
 class OrganizationProfile(Base):

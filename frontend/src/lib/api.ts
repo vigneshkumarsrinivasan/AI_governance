@@ -127,6 +127,35 @@ export function logout() {
   setStoredUser(null);
 }
 
+// --- Company / organization management (multi-tenant) ----------------------
+export async function getMyCompanies() {
+  return request<{ companies: any[]; active_tenant_id: string }>("/organizations/mine");
+}
+
+export async function createCompany(payload: Record<string, any>) {
+  const res = await request<{ company: any; access_token: string }>("/organizations", {
+    method: "POST", body: JSON.stringify(payload),
+  });
+  if (res.access_token) setToken(res.access_token);
+  return res;
+}
+
+export async function switchCompany(organizationId: string) {
+  const res = await request<{ company: any; access_token: string; role: string }>("/organizations/switch", {
+    method: "POST", body: JSON.stringify({ organization_id: organizationId }),
+  });
+  if (res.access_token) setToken(res.access_token);
+  return res;
+}
+
+export async function getCurrentCompany() {
+  return request<any>("/organizations/current");
+}
+
+export async function updateCurrentCompany(payload: Record<string, any>) {
+  return request<any>("/organizations/current", { method: "PATCH", body: JSON.stringify(payload) });
+}
+
 // --- SME experience (spec sections 4-7, 16) --------------------------------
 export async function refreshCurrentUser(): Promise<CurrentUser> {
   const me = await request<CurrentUser>("/auth/me");
@@ -252,6 +281,20 @@ export async function getFrameworkDetail(frameworkId: string) {
   return request<any>(`/frameworks/${frameworkId}`);
 }
 
+// Real source-traceable regulatory content (the ingestion subsystem):
+// the full requirement sets - EU AI Act 419, GDPR 238, NIST 800-53 1014, etc.
+export async function getRegulatoryFrameworks() {
+  return request<any[]>("/regulatory/frameworks");
+}
+
+export async function getRegulatoryRequirements(frameworkKey: string) {
+  return request<any[]>(`/regulatory/frameworks/${frameworkKey}/requirements`);
+}
+
+export async function getRegulatoryRequirementDetail(requirementKey: string) {
+  return request<any>(`/regulatory/requirements/${encodeURIComponent(requirementKey)}`);
+}
+
 // 4. Controls & Crosswalk
 export async function getControls() {
   return request<any[]>("/controls");
@@ -365,6 +408,25 @@ export async function updateRemediation(taskId: string, status: string) {
 
 export async function createRisk(payload: Record<string, any>) {
   return request<any>("/risks", { method: "POST", body: JSON.stringify(payload) });
+}
+
+// --- Per-AI-system governance workflow / next action ----------------------
+export async function getSystemWorkflow(systemId: string) {
+  return request<any>(`/ai-systems/${systemId}/workflow`);
+}
+
+export async function getPortfolioWorkflow() {
+  return request<any[]>("/ai-systems/workflow/portfolio");
+}
+
+export async function assessmentApproval(assessmentId: string, decision: "submit" | "approve" | "reject", notes?: string) {
+  return request<any>(`/assessments/${assessmentId}/approval`, {
+    method: "POST", body: JSON.stringify({ decision, notes }),
+  });
+}
+
+export async function createAssessment(payload: { system_id: string; framework_id: string; title: string }) {
+  return request<any>("/assessments", { method: "POST", body: JSON.stringify(payload) });
 }
 
 export async function acceptRisk(riskId: string, businessJustification: string, expiryDate?: string) {

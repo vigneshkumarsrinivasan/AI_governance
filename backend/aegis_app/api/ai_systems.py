@@ -8,14 +8,20 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from aegis_app.core.database import get_db
-from aegis_app.models.models import AISystem, User, AuditEvent, Risk, CustomerControl, ApplicabilityDecision
+from aegis_app.models.models import (
+    AISystem, User, AuditEvent, Risk, CustomerControl, ApplicabilityDecision,
+    Assessment, AssessmentResponse, Finding, Evidence,
+)
 from aegis_app.schemas.schemas import (
     AISystemCreate, AISystemUpdate, AISystemResponse,
     IntakeQuestionnaireInput, IntakeEvaluationResult
 )
 from aegis_app.services.applicability import evaluate_ai_system_applicability
+from aegis_app.services.workflow import compute_workflow
 from aegis_app.api.deps import get_current_user, require_governance_write, require_legal_review
+from sqlalchemy import func as _sqlfunc
 
 router = APIRouter(prefix="/ai-systems", tags=["AI Systems"])
 
@@ -135,6 +141,95 @@ async def get_ai_system(
     if not system:
         raise HTTPException(status_code=404, detail="AI System not found")
     return system
+
+
+async def _system_workflow(db: AsyncSession, current_user: User, system: AISystem) -> Dict[str, Any]:
+    tid = current_user.tenant_id
+    # An applicability decision counts for this system if it is linked by id,
+    # or (common case: the stateless intake evaluator ran before/without a link)
+    # if it was recorded for a decision with this system's name.
+    from sqlalchemy import or_ as _or
+    appl = (await db.execute(
+        select(ApplicabilityDecision).where(
+            ApplicabilityDecision.tenant_id == tid,
+            _or(
+                ApplicabilityDecision.system_id == system.id,
+                ApplicabilityDecision.system_name == system.name,
+            ),
+        )
+    )).scalars().all()
+    assessments = (await db.execute(
+        select(Assessment).where(Assessment.system_id == system.id, Assessment.tenant_id == tid)
+        .options(selectinload(Assessment.responses))
+    )).scalars().all()
+    a_dicts = []
+    for a in assessments:
+        answered = sum(1 for r in a.responses if r.status and r.status not in ("Unknown", "Not Started"))
+        a_dicts.append({
+            "system_id": a.system_id, "approval_status": getattr(a, "approval_status", "NOT_SUBMITTED"),
+            "readiness_percentage": a.readiness_percentage or 0.0,
+            "response_total": len(a.responses), "response_answered": answered,
+        })
+    controls = [
+        {"status": c.status, "effectiveness": c.effectiveness}
+        for c in (await db.execute(select(CustomerControl).where(CustomerControl.tenant_id == tid))).scalars().all()
+    ]
+    ev_count = (await db.execute(select(_sqlfunc.count(Evidence.id)).where(Evidence.tenant_id == tid))).scalar() or 0
+    findings = [
+        {"status": f.status}
+        for f in (await db.execute(
+            select(Finding).where(Finding.tenant_id == tid, Finding.system_id == system.id)
+        )).scalars().all()
+    ]
+    return compute_workflow(
+        system={"id": system.id, "name": system.name},
+        applicability_decisions=[{"id": d.id} for d in appl],
+        assessments=a_dicts,
+        tenant_controls=controls,
+        tenant_evidence_count=ev_count,
+        open_findings_for_system=findings,
+    )
+
+
+@router.get("/{system_id}/workflow", response_model=Dict[str, Any])
+async def get_system_workflow(
+    system_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """The governance workflow state + single next action for one AI system
+    (spec sections 27, 41, 64). Powers the 'Continue governance' button and the
+    step tracker."""
+    system = (await db.execute(
+        select(AISystem).where(AISystem.id == system_id, AISystem.tenant_id == current_user.tenant_id)
+    )).scalars().first()
+    if not system:
+        raise HTTPException(status_code=404, detail="AI System not found")
+    return await _system_workflow(db, current_user, system)
+
+
+@router.get("/workflow/portfolio", response_model=List[Dict[str, Any]])
+async def portfolio_workflow(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Per-system next action across the whole company portfolio (spec sections
+    9, 27, 44, 67)."""
+    systems = (await db.execute(
+        select(AISystem).where(AISystem.tenant_id == current_user.tenant_id).order_by(AISystem.created_at)
+    )).scalars().all()
+    out = []
+    for s in systems:
+        wf = await _system_workflow(db, current_user, s)
+        out.append({
+            "system_id": s.id, "name": s.name, "owner": s.owner,
+            "business_unit": s.business_unit, "risk_classification": s.risk_classification,
+            "completed_steps": wf["completed_steps"], "total_steps": wf["total_steps"],
+            "readiness_percentage": wf["readiness_percentage"], "open_findings": wf["open_findings"],
+            "next_action": wf["next_action"],
+        })
+    return out
+
 
 @router.put("/{system_id}", response_model=AISystemResponse)
 async def update_ai_system(

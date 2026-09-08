@@ -5,10 +5,11 @@ import {
   Shield, Brain, CheckCircle2, AlertTriangle, AlertCircle, FileText,
   Layers, Lock, Terminal, Activity, FileCheck, Sliders, RefreshCw,
   Search, ExternalLink, ChevronRight, Zap, Play, X, Download, MessageSquare,
-  Building, User, Cpu, AlertOctagon, HelpCircle, Check, Clock
+  Building, User, Cpu, AlertOctagon, HelpCircle, Check, Clock, Plus
 } from "lucide-react";
 import * as api from "@/lib/api";
 import SmeExperience from "@/components/sme/SmeExperience";
+import CompanySwitcher from "@/components/CompanySwitcher";
 
 export default function AegisPlatform() {
   const [authChecked, setAuthChecked] = useState<boolean>(false);
@@ -25,6 +26,53 @@ export default function AegisPlatform() {
   const [metrics, setMetrics] = useState<any>(null);
   const [aiSystems, setAiSystems] = useState<any[]>([]);
   const [frameworks, setFrameworks] = useState<any[]>([]);
+  // Real source-traceable regulatory content keyed by framework_key
+  // (EU AI Act 419 requirements, GDPR 238, NIST 800-53 1014, …).
+  const [regFrameworks, setRegFrameworks] = useState<Record<string, any>>({});
+  const [portfolioWorkflow, setPortfolioWorkflow] = useState<any[]>([]);
+  const [assessmentsList, setAssessmentsList] = useState<any[]>([]);
+  const [openAssessment, setOpenAssessment] = useState<any>(null);
+  const [assessmentBusy, setAssessmentBusy] = useState(false);
+  const [newAssessmentSystem, setNewAssessmentSystem] = useState("");
+  const [newAssessmentFramework, setNewAssessmentFramework] = useState("eu_ai_act");
+
+  const loadAssessments = async () => {
+    try { setAssessmentsList(await api.getAssessments()); } catch { /* ignore */ }
+  };
+  const openAssessmentDetail = async (id: string) => {
+    try { setOpenAssessment(await api.getAssessmentDetail(id)); }
+    catch (e: any) { alert(e?.message || "Could not open assessment"); }
+  };
+  const createAssessmentFlow = async () => {
+    if (!newAssessmentSystem) { alert("Choose an AI system first."); return; }
+    setAssessmentBusy(true);
+    try {
+      const fwName = frameworks.find((f: any) => f.id === newAssessmentFramework)?.name || newAssessmentFramework;
+      const res: any = await api.createAssessment({
+        system_id: newAssessmentSystem, framework_id: newAssessmentFramework, title: `${fwName} assessment`,
+      });
+      await loadAssessments();
+      api.getPortfolioWorkflow().then(setPortfolioWorkflow).catch(() => {});
+      if (res?.id) await openAssessmentDetail(res.id);
+    } catch (e: any) {
+      alert("Could not create assessment: " + (e?.message || e));
+    } finally { setAssessmentBusy(false); }
+  };
+  const assessmentApprovalAction = async (id: string, decision: "submit" | "approve" | "reject") => {
+    setAssessmentBusy(true);
+    try {
+      await api.assessmentApproval(id, decision);
+      await openAssessmentDetail(id);
+      await loadAssessments();
+      await loadPlatformData();
+    } catch (e: any) {
+      alert(e?.message || "Action failed");
+    } finally { setAssessmentBusy(false); }
+  };
+  const [frameworkReqFilter, setFrameworkReqFilter] = useState("");
+  // A couple of legacy catalog ids differ from the regulatory subsystem's keys.
+  const REG_KEY_ALIAS: Record<string, string> = { gdpr_ai: "gdpr", india_dpdpa: "india_dpdp" };
+  const regKeyFor = (id: string) => REG_KEY_ALIAS[id] || id;
   const [controls, setControls] = useState<any[]>([]);
   const [crosswalk, setCrosswalk] = useState<any[]>([]);
   const [evidenceList, setEvidenceList] = useState<any[]>([]);
@@ -154,11 +202,15 @@ export default function AegisPlatform() {
     else if (controls.length > 0) { setPendingControlCode(null); }  // not found; give up quietly
   }, [pendingControlCode, controls]);
 
-  const goToFrameworkRequirement = (frameworkId: string, ref?: string) => {
+  const goToFrameworkRequirement = (frameworkId: string, ref?: string, articleLabel?: string) => {
     if (!frameworkId) return;
     setActiveTab("frameworks");
+    setFrameworkReqFilter("");   // a deep-link must not be hidden by a stale search
     setOpenFramework(frameworkId);
-    setFrameworkHighlight(ref || null);
+    // Store both the raw id and the human article label ("Article 9") so the
+    // scroll effect can match even when the legacy crosswalk id (EU-AIA-ART-09)
+    // differs from the regulatory requirement key (EU-AIA-ARTICLE-9).
+    setFrameworkHighlight(ref ? `${ref}␟${articleLabel || ""}` : (articleLabel || null));
   };
 
   const [pendingSystemId, setPendingSystemId] = useState<string | null>(null);
@@ -175,33 +227,103 @@ export default function AegisPlatform() {
     else if (aiSystems.length > 0) { setPendingSystemId(null); }
   }, [pendingSystemId, aiSystems]);
 
+  // Route to an AI system's next incomplete governance step (spec sections 27, 64).
+  const continueGovernance = (systemId: string) => {
+    const wf = portfolioWorkflow.find((w: any) => w.system_id === systemId);
+    const tab = wf?.next_action?.target_tab || "intake";
+    const sys = aiSystems.find((s: any) => s.id === systemId);
+    if (tab === "intake" && sys) {
+      // seed the intake wizard with this system's name so applicability is for it
+      setIntakeForm((f: any) => ({ ...f, system_name: sys.name, business_purpose: sys.business_purpose || sys.description || f.business_purpose }));
+      setIntakeStep(1);
+    }
+    if (tab === "inventory" && sys) { setInventoryFilter("all"); setActiveTab("inventory"); setTimeout(() => setSelectedSystem(sys), 30); return; }
+    setActiveTab(tab);
+  };
+
   const goToVendor = (vendorId: string) => { if (!vendorId) return; setVendorFocusId(vendorId); setActiveTab("vendor-registry"); };
   const goToModel = (modelId: string) => { if (!modelId) return; setModelFocusId(modelId); setActiveTab("model-registry"); };
   const goToAgent = (agentId: string) => { if (!agentId) return; setAgentFocusId(agentId); setActiveTab("agent-registry"); };
 
-  // Load a framework's requirement tree when one is opened in the Frameworks tab.
+  // Load a framework's FULL requirement set when one is opened in the Frameworks
+  // tab. Prefers the real regulatory ingestion subsystem (source-traceable, the
+  // complete set - EU AI Act 419, GDPR 238, NIST 800-53 1014, …); falls back to
+  // the legacy catalog only for frameworks that have not been ingested.
   useEffect(() => {
-    if (!openFramework) { setFrameworkDetail(null); return; }
+    if (!openFramework) { setFrameworkDetail(null); setFrameworkReqFilter(""); return; }
     let cancelled = false;
     setFrameworkDetailLoading(true);
-    api.getFrameworkDetail(openFramework)
+    setFrameworkReqFilter("");
+
+    const regKey = regKeyFor(openFramework);
+    const reg = regFrameworks[regKey];
+    const loader = (reg && (reg.requirement_count || 0) > 0)
+      ? api.getRegulatoryRequirements(regKey).then((reqs: any[]) => {
+          // group by `domain` (chapter/part/function) preserving first-seen order
+          const groups: Record<string, any[]> = {};
+          const order: string[] = [];
+          (reqs || []).forEach(r => {
+            const g = r.domain || "Requirements";
+            if (!(g in groups)) { groups[g] = []; order.push(g); }
+            groups[g].push({
+              id: r.requirement_key,
+              article: r.source_reference || r.requirement_key,
+              title: r.source_reference || r.requirement_key,
+              normalized_requirement: r.normalized_requirement,
+              source_text: r.source_text,
+              obligation_type: r.obligation_type,
+              mandatory: r.mandatory,
+              review_status: r.review_status,
+              effective_from: r.effective_from,
+              source_anchor_url: r.source_anchor_url,
+            });
+          });
+          return {
+            _regulatory: true,
+            name: reg.framework_name,
+            official_reference: reg.canonical_identifier || reg.version_label,
+            jurisdiction: reg.jurisdiction,
+            version: reg.version_label,
+            official_url: reg.official_url,
+            published_status: reg.published_status,
+            coverage: reg.coverage,
+            total_requirements: (reqs || []).length,
+            chapters: order.map(g => ({ chapter_id: g, title: "", requirements: groups[g] })),
+          };
+        })
+      : api.getFrameworkDetail(openFramework);
+
+    Promise.resolve(loader)
       .then(d => { if (!cancelled) setFrameworkDetail(d); })
       .catch(() => { if (!cancelled) setFrameworkDetail(null); })
       .finally(() => { if (!cancelled) setFrameworkDetailLoading(false); });
     return () => { cancelled = true; };
-  }, [openFramework]);
+  }, [openFramework, regFrameworks]);
 
   // Once a framework detail is loaded and a highlight ref is set, scroll to it.
+  // Best-effort match: exact requirement-key id, then by the article label
+  // ("Article 9"), then a normalised form (ART-09 ~ ARTICLE-9).
   useEffect(() => {
     if (!frameworkDetail || !frameworkHighlight) return;
+    const [rawRef, articleLabel] = frameworkHighlight.split("␟");
+    const norm = (s: string) => (s || "").toUpperCase().replace(/ARTICLE|ART\.?|SECTION|SEC\.?|POINT|PARA(GRAPH)?/g, "A").replace(/[^A-Z0-9]/g, "").replace(/A0+/g, "A");
     const t = setTimeout(() => {
-      const el = document.getElementById(`req-${frameworkHighlight}`);
+      let el: HTMLElement | null = rawRef ? document.getElementById(`req-${rawRef}`) : null;
+      if (!el) {
+        const rows = Array.from(document.querySelectorAll<HTMLElement>('[id^="req-"]'));
+        const targetNorm = norm(rawRef || articleLabel || "");
+        el =
+          (articleLabel && rows.find(r => r.querySelector(".font-mono")?.textContent?.trim().toLowerCase() === articleLabel.trim().toLowerCase())) ||
+          (targetNorm && rows.find(r => norm(r.id.replace(/^req-/, "")) === targetNorm)) ||
+          (articleLabel && rows.find(r => (r.textContent || "").toLowerCase().includes(articleLabel.trim().toLowerCase()))) ||
+          null;
+      }
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         el.classList.add("ring-2", "ring-sky-400");
-        setTimeout(() => el.classList.remove("ring-2", "ring-sky-400"), 2600);
+        setTimeout(() => el && el.classList.remove("ring-2", "ring-sky-400"), 2600);
       }
-    }, 120);
+    }, 160);
     return () => clearTimeout(t);
   }, [frameworkDetail, frameworkHighlight]);
 
@@ -315,6 +437,23 @@ export default function AegisPlatform() {
       setRegistryAgents(regAgents);
       setRegistryVendors(regVendors);
       setPermissionGraph(permGraph);
+
+      // Non-blocking: pull the real regulatory framework catalog (full
+      // requirement counts + source metadata). A failure here must not break
+      // the rest of the dashboard, so it is fetched separately.
+      api.getRegulatoryFrameworks()
+        .then((rf: any[]) => {
+          const byKey: Record<string, any> = {};
+          (rf || []).forEach(f => { byKey[f.framework_key] = f; });
+          setRegFrameworks(byKey);
+        })
+        .catch(() => { /* regulatory subsystem unavailable - keep legacy counts */ });
+
+      api.getPortfolioWorkflow()
+        .then((pw: any[]) => setPortfolioWorkflow(pw || []))
+        .catch(() => setPortfolioWorkflow([]));
+
+      api.getAssessments().then((a: any[]) => setAssessmentsList(a || [])).catch(() => setAssessmentsList([]));
     } catch (err: any) {
       console.error("Data load failed:", err);
       setError(err.message || "Failed to load platform data");
@@ -584,6 +723,7 @@ export default function AegisPlatform() {
   if (currentUser.ui_mode === "simple") {
     return (
       <SmeExperience
+        key={currentUser.organization_id || "sme"}
         user={currentUser}
         onUserChange={(u) => {
           setCurrentUser(u);
@@ -693,6 +833,7 @@ export default function AegisPlatform() {
             Compliance & Assurance
           </div>
           {[
+            { id: "assessments", label: "Assessments", icon: FileCheck, badge: assessmentsList.length },
             { id: "frameworks", label: "Authoritative Frameworks", icon: FileCheck, badge: "17" },
             { id: "evidence", label: "Evidence Vault", icon: Lock, badge: evidenceList.length },
             { id: "security", label: "AI Security & Agents", icon: Terminal, badge: agents.length },
@@ -768,13 +909,15 @@ export default function AegisPlatform() {
         {/* Global Header */}
         <header className="h-16 flex-shrink-0 border-b border-white/10 px-6 flex items-center justify-between bg-[#0B0F1A]/80 backdrop-blur-lg">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">
-              <Building className="w-3.5 h-3.5 text-sky-400" />
-              <span className="font-semibold text-slate-200">{currentUser?.organization_name || "Your Organization"}</span>
-              {currentUser?.is_demo_tenant && (
-                <span className="text-[10px] px-1.5 py-0.2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-medium">DEMO</span>
-              )}
-            </div>
+            <CompanySwitcher
+              activeName={currentUser?.organization_name}
+              onSwitched={async () => {
+                const me = await api.getCurrentUser();
+                setCurrentUser(me);
+                setActiveTab("dashboard");
+                await loadPlatformData();
+              }}
+            />
             <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400">
               <span>Readiness Posture:</span>
               <span className="font-bold text-sky-400">{metrics?.overall_readiness_percentage ?? 0}%</span>
@@ -820,8 +963,81 @@ export default function AegisPlatform() {
               {/* ============================================================ */}
               {/* TAB 1: EXECUTIVE DASHBOARD                                  */}
               {/* ============================================================ */}
-              {activeTab === "dashboard" && metrics && (
+              {activeTab === "dashboard" && metrics && aiSystems.length === 0 && (
+                <div className="max-w-xl mx-auto mt-16 text-center space-y-4 animate-fadeIn">
+                  <div className="w-14 h-14 mx-auto rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center">
+                    <Brain className="w-7 h-7 text-sky-400" />
+                  </div>
+                  <h1 className="text-xl font-bold text-white">
+                    {currentUser?.organization_name || "Your organization"} is ready.
+                  </h1>
+                  <p className="text-sm text-slate-400">
+                    The primary governance journey is: register an AI system → assess applicability → run an assessment →
+                    assign controls → add evidence → test → resolve findings → approve → report.
+                    Start by registering your first AI system.
+                  </p>
+                  <button
+                    onClick={() => { setIntakeStep(1); setActiveTab("intake"); }}
+                    className="px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm inline-flex items-center gap-2"
+                  >
+                    <Play className="w-4 h-4" /> Add your first AI system
+                  </button>
+                  <div className="text-[11px] text-slate-500 pt-2">
+                    Wrong company? Use the company selector in the header to switch or add another.
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "dashboard" && metrics && aiSystems.length > 0 && (
                 <div className="space-y-6 animate-fadeIn">
+                  {/* Governance journey - needs attention + per-system next action (spec §7, §27, §43, §44) */}
+                  {(() => {
+                    const pw = portfolioWorkflow;
+                    const byAction: Record<string, any[]> = {};
+                    pw.forEach((s: any) => {
+                      const k = s.next_action?.key || "monitor";
+                      (byAction[k] = byAction[k] || []).push(s);
+                    });
+                    const ATTN: [string, string][] = [
+                      ["assess_applicability", "need an applicability review"],
+                      ["start_assessment", "ready to start an assessment"],
+                      ["continue_assessment", "have an assessment in progress"],
+                      ["add_evidence", "need evidence"],
+                      ["test_controls", "need control testing"],
+                      ["fix_findings", "have open findings to fix"],
+                      ["submit_for_approval", "are ready to submit for approval"],
+                      ["await_approval", "are awaiting approval"],
+                      ["generate_report", "are approved - generate the report"],
+                    ];
+                    const rows = ATTN.filter(([k]) => byAction[k]?.length);
+                    if (rows.length === 0) return null;
+                    return (
+                      <div className="p-5 rounded-xl glass-panel border border-amber-500/20 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-400" />
+                          <h2 className="text-sm font-bold text-slate-100">Needs attention</h2>
+                        </div>
+                        <div className="space-y-1.5">
+                          {rows.map(([k, phrase]) => {
+                            const systems = byAction[k];
+                            return (
+                              <button key={k}
+                                onClick={() => continueGovernance(systems[0].system_id)}
+                                className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-black/30 border border-white/5 hover:border-sky-500/40 text-left text-xs transition-colors"
+                              >
+                                <span className="text-slate-200">
+                                  <span className="font-bold text-sky-300">{systems.length}</span> AI system{systems.length === 1 ? "" : "s"} {phrase}
+                                  <span className="text-slate-500"> — {systems.slice(0, 3).map((s: any) => s.name).join(", ")}{systems.length > 3 ? "…" : ""}</span>
+                                </span>
+                                <span className="text-sky-400 flex items-center gap-1 flex-shrink-0">{systems[0].next_action.label} <ChevronRight className="w-3.5 h-3.5" /></span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Hero Metric Banner */}
                   <div className="p-6 rounded-2xl bg-gradient-to-br from-sky-950/40 via-indigo-950/20 to-slate-900/60 border border-sky-500/20 relative overflow-hidden">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
@@ -997,10 +1213,10 @@ export default function AegisPlatform() {
                       </p>
                     </div>
                     <button
-                      onClick={() => setActiveTab("intake")}
-                      className="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-sky-500/25 transition-all"
+                      onClick={() => { setIntakeStep(1); setActiveTab("intake"); }}
+                      className="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-sky-500/25 transition-all flex-shrink-0"
                     >
-                      <Play className="w-3.5 h-3.5" /> Start New Intake
+                      <Plus className="w-4 h-4" /> Add AI System
                     </button>
                   </div>
 
@@ -1045,8 +1261,8 @@ export default function AegisPlatform() {
                           <th className="p-3.5">Tech & Model</th>
                           <th className="p-3.5">Risk Tier</th>
                           <th className="p-3.5">EU AI Act Tier</th>
-                          <th className="p-3.5">Kill-Switch</th>
-                          <th className="p-3.5 text-right">Action</th>
+                          <th className="p-3.5">Governance Progress</th>
+                          <th className="p-3.5 text-right">Next Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
@@ -1083,23 +1299,55 @@ export default function AegisPlatform() {
                               {sys.eu_ai_act_classification}
                             </td>
                             <td className="p-3.5">
-                              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                                <Check className="w-2.5 h-2.5" /> Active
-                              </span>
+                              {(() => {
+                                const wf = portfolioWorkflow.find((w: any) => w.system_id === sys.id);
+                                if (!wf) return <span className="text-[10px] text-slate-500">—</span>;
+                                return (
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-20 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                                      <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-500" style={{ width: `${Math.round(100 * wf.completed_steps / wf.total_steps)}%` }} />
+                                    </div>
+                                    <span className="text-[10px] text-slate-400">{wf.completed_steps}/{wf.total_steps}</span>
+                                    {wf.open_findings > 0 && <span className="text-[9px] text-rose-300 bg-rose-500/10 px-1 rounded border border-rose-500/30">{wf.open_findings} finding{wf.open_findings === 1 ? "" : "s"}</span>}
+                                  </div>
+                                );
+                              })()}
                             </td>
                             <td className="p-3.5 text-right">
-                              <button
-                                onClick={() => setSelectedSystem(sys)}
-                                className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-sky-400 text-[11px] border border-white/10 transition-all"
-                              >
-                                Details
-                              </button>
+                              {(() => {
+                                const wf = portfolioWorkflow.find((w: any) => w.system_id === sys.id);
+                                return (
+                                  <div className="flex items-center gap-1.5 justify-end">
+                                    {wf?.next_action && (
+                                      <button
+                                        onClick={() => continueGovernance(sys.id)}
+                                        title={wf.next_action.helper}
+                                        className="px-2.5 py-1 rounded bg-sky-500 hover:bg-sky-400 text-slate-950 text-[11px] font-semibold transition-all"
+                                      >
+                                        {wf.next_action.label}
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={() => setSelectedSystem(sys)}
+                                      className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-sky-400 text-[11px] border border-white/10 transition-all"
+                                    >
+                                      Details
+                                    </button>
+                                  </div>
+                                );
+                              })()}
                             </td>
                           </tr>
                         ))}
                         {aiSystems.length === 0 && (
                           <tr><td colSpan={7} className="p-6 text-center text-xs text-slate-500">
-                            No AI systems registered yet. <button onClick={() => setActiveTab("intake")} className="text-sky-400 hover:underline">Start an intake</button> to register your first system.
+                            <div className="space-y-2">
+                              <p>No AI systems registered yet. Register your first AI system to determine applicable regulations and begin governance.</p>
+                              <button onClick={() => { setIntakeStep(1); setActiveTab("intake"); }}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs">
+                                <Plus className="w-4 h-4" /> Add AI System
+                              </button>
+                            </div>
                           </td></tr>
                         )}
                         {aiSystems.length > 0 && aiSystems.filter((sys: any) =>
@@ -1566,7 +1814,7 @@ export default function AegisPlatform() {
                                 <div key={idx} className="flex items-center gap-2 text-[11px]">
                                   <span className="font-semibold text-slate-200">{m.framework_name}:</span>
                                   <button
-                                    onClick={() => goToFrameworkRequirement(m.framework_id, m.requirement_id || m.article)}
+                                    onClick={() => goToFrameworkRequirement(m.framework_id, m.requirement_id, m.article)}
                                     title={`Open ${m.framework_name} ${m.article || m.requirement_id}${m.requirement_title ? " — " + m.requirement_title : ""}`}
                                     className="font-mono text-sky-300 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20 hover:border-sky-400 hover:text-sky-200 transition-colors"
                                   >
@@ -1628,7 +1876,10 @@ export default function AegisPlatform() {
 
                         <div className="pt-4 mt-3 border-t border-white/5 flex items-center justify-between">
                           <div className="text-[11px] text-emerald-400 font-medium">
-                            {fw.requirement_count} Requirements
+                            {(regFrameworks[regKeyFor(fw.id)]?.requirement_count ?? fw.requirement_count) || 0} requirements
+                            {regFrameworks[regKeyFor(fw.id)] && (
+                              <span className="text-slate-500 font-normal"> · {regFrameworks[regKeyFor(fw.id)].hierarchy_node_count} nodes</span>
+                            )}
                           </div>
                           <span className="text-xs text-sky-400 flex items-center gap-1">
                             {openFramework === fw.id ? "Viewing" : "Browse requirements"} <ChevronRight className="w-3 h-3" />
@@ -1637,6 +1888,13 @@ export default function AegisPlatform() {
                       </button>
                     ))}
                   </div>
+
+                  {Object.keys(regFrameworks).length > 0 && (
+                    <div className="text-[11px] text-slate-500">
+                      {Object.values(regFrameworks).reduce((n: number, f: any) => n + (f.requirement_count || 0), 0).toLocaleString()} source-traceable requirements ingested across {Object.values(regFrameworks).filter((f: any) => (f.requirement_count || 0) > 0).length} standards.
+                      Counts on cards without a "nodes" figure are from the legacy catalog.
+                    </div>
+                  )}
 
                   {/* Framework requirement browser (opens on card click; also the
                       target of "EU AI Act: Article 9" style links from Crosswalk,
@@ -1667,53 +1925,183 @@ export default function AegisPlatform() {
                         </div>
                       </div>
 
-                      {frameworkDetailLoading && <div className="text-xs text-slate-500 flex items-center gap-2"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Loading requirements…</div>}
+                      {frameworkDetailLoading && <div className="text-xs text-slate-500 flex items-center gap-2"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Loading full requirement set…</div>}
 
                       {!frameworkDetailLoading && !frameworkDetail && (
                         <div className="text-xs text-slate-500">A structured requirement view is not available for this framework yet. Use the official source link above.</div>
                       )}
 
-                      {frameworkDetail?.chapters?.map((ch: any) => (
+                      {frameworkDetail && (() => {
+                        const q = frameworkReqFilter.trim().toLowerCase();
+                        const allChapters = frameworkDetail.chapters || [];
+                        const total = frameworkDetail.total_requirements ?? allChapters.reduce((n: number, c: any) => n + (c.requirements?.length || 0), 0);
+                        const filtered = allChapters
+                          .map((ch: any) => ({
+                            ...ch,
+                            requirements: (ch.requirements || []).filter((r: any) =>
+                              !q ||
+                              String(r.article || "").toLowerCase().includes(q) ||
+                              String(r.title || "").toLowerCase().includes(q) ||
+                              String(r.normalized_requirement || "").toLowerCase().includes(q) ||
+                              String(r.source_text || "").toLowerCase().includes(q) ||
+                              String(ch.chapter_id || "").toLowerCase().includes(q)
+                            ),
+                          }))
+                          .filter((ch: any) => ch.requirements.length > 0);
+                        const shown = filtered.reduce((n: number, c: any) => n + c.requirements.length, 0);
+                        return (
+                          <>
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <input
+                                value={frameworkReqFilter}
+                                onChange={e => setFrameworkReqFilter(e.target.value)}
+                                placeholder={`Search ${total} requirements (article, keyword, source text)…`}
+                                className="flex-1 min-w-[220px] px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-200 focus:outline-none focus:border-sky-500/50"
+                              />
+                              <span className="text-[11px] text-slate-500">
+                                {q ? `${shown} of ${total}` : `${total}`} requirement{total === 1 ? "" : "s"}
+                                {frameworkDetail._regulatory && <span className="text-emerald-400"> · source-traceable</span>}
+                                {frameworkDetail.published_status && frameworkDetail.published_status !== "PUBLISHED" && (
+                                  <span className="text-amber-400" title="Machine-extracted; pending human verification"> · {frameworkDetail.published_status}</span>
+                                )}
+                              </span>
+                            </div>
+
+                            {filtered.map((ch: any) => (
                         <div key={ch.chapter_id} className="space-y-2">
-                          <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wide border-b border-white/5 pb-1">
-                            {ch.chapter_id}{ch.title ? ` — ${ch.title}` : ""}
+                          <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wide border-b border-white/5 pb-1 sticky top-0 bg-[#0d1117]/95 py-1 z-10">
+                            {ch.chapter_id}{ch.title ? ` — ${ch.title}` : ""} <span className="text-slate-500 font-normal">({ch.requirements.length})</span>
                           </div>
-                          {(ch.requirements || []).map((r: any) => {
+                          {ch.requirements.map((r: any) => {
                             const systemsFor = aiSystems.filter((s: any) => (s.applicable_frameworks || []).includes(openFramework));
+                            const mappedControls = crosswalk.filter((cw: any) => (cw.mappings || []).some((m: any) => m.requirement_id === r.id || m.article === r.article));
                             return (
                               <div key={r.id} id={`req-${r.id}`}
-                                className="rounded-lg bg-black/30 border border-white/5 p-3 space-y-1.5 scroll-mt-24 transition-all">
+                                className="rounded-lg bg-black/30 border border-white/5 p-3 space-y-1.5 scroll-mt-28 transition-all">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-mono text-[11px] text-sky-300 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">{r.article || r.id}</span>
-                                  <span className="text-xs font-semibold text-slate-100">{r.title}</span>
+                                  {r.title && r.title !== r.article && <span className="text-xs font-semibold text-slate-100">{r.title}</span>}
+                                  {r.obligation_type && <span className="text-[9px] text-slate-400 bg-white/5 px-1 rounded border border-white/10">{String(r.obligation_type).replace(/_/g, " ").toLowerCase()}</span>}
+                                  {r.mandatory === false && <span className="text-[9px] text-slate-400">recommended</span>}
                                 </div>
                                 {r.normalized_requirement && (
                                   <p className="text-[11px] text-slate-400 leading-relaxed">{r.normalized_requirement}</p>
                                 )}
+                                {r.source_text && r.source_text !== r.normalized_requirement && (
+                                  <p className="text-[10px] text-slate-500 italic border-l-2 border-white/10 pl-2">“{r.source_text}”</p>
+                                )}
                                 <div className="flex items-center gap-3 flex-wrap pt-1 text-[10px]">
-                                  {/* controls that map to this requirement */}
-                                  {crosswalk
-                                    .filter((cw: any) => (cw.mappings || []).some((m: any) => m.requirement_id === r.id || m.article === r.article))
-                                    .map((cw: any) => (
-                                      <button key={cw.control_id} onClick={() => goToControl(cw.control_code)}
-                                        className="font-mono text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20 hover:border-indigo-400">
-                                        {cw.control_code} ↗
-                                      </button>
-                                    ))}
+                                  {mappedControls.map((cw: any) => (
+                                    <button key={cw.control_id} onClick={() => goToControl(cw.control_code)}
+                                      className="font-mono text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20 hover:border-indigo-400">
+                                      {cw.control_code} ↗
+                                    </button>
+                                  ))}
                                   {systemsFor.length > 0 && (
                                     <button onClick={() => { setInventoryFilter("all"); setActiveTab("inventory"); }}
                                       className="text-slate-400 hover:text-sky-300">
                                       {systemsFor.length} affected system{systemsFor.length === 1 ? "" : "s"} ↗
                                     </button>
                                   )}
+                                  {r.effective_from && <span className="text-slate-500">effective {r.effective_from}</span>}
+                                  {r.source_anchor_url && (
+                                    <a href={r.source_anchor_url} target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:text-sky-300 inline-flex items-center gap-0.5">
+                                      source <ExternalLink className="w-2.5 h-2.5" />
+                                    </a>
+                                  )}
                                 </div>
                               </div>
                             );
                           })}
                         </div>
-                      ))}
+                            ))}
+                            {q && shown === 0 && <div className="text-[11px] text-slate-500">No requirements match “{frameworkReqFilter}”.</div>}
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* ============================================================ */}
+              {/* TAB: ASSESSMENTS + APPROVAL WORKFLOW                        */}
+              {/* ============================================================ */}
+              {activeTab === "assessments" && (
+                <div className="space-y-4 animate-fadeIn">
+                  <div>
+                    <h1 className="text-lg font-bold text-white flex items-center gap-2">
+                      <FileCheck className="w-5 h-5 text-sky-400" /> Assessments
+                    </h1>
+                    <p className="text-xs text-slate-400">Evaluate an AI system against a framework's applicable requirements, then route it for approval.</p>
+                  </div>
+
+                  {/* Start a new assessment */}
+                  <div className="p-4 rounded-xl glass-panel flex flex-wrap items-end gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-400">AI System</label>
+                      <select value={newAssessmentSystem} onChange={e => setNewAssessmentSystem(e.target.value)}
+                        className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-slate-200 min-w-[200px]">
+                        <option value="">Select…</option>
+                        {aiSystems.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-400">Framework</label>
+                      <select value={newAssessmentFramework} onChange={e => setNewAssessmentFramework(e.target.value)}
+                        className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-slate-200 min-w-[200px]">
+                        {frameworks.map((f: any) => <option key={f.id} value={f.id}>{f.name}</option>)}
+                      </select>
+                    </div>
+                    <button onClick={createAssessmentFlow} disabled={assessmentBusy || !newAssessmentSystem}
+                      className="px-4 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 disabled:opacity-40 text-slate-950 text-xs font-bold">
+                      {assessmentBusy ? "Working…" : "Start assessment"}
+                    </button>
+                  </div>
+
+                  <div className="rounded-xl glass-panel overflow-hidden">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-900/80 border-b border-white/10 text-slate-400 font-semibold">
+                        <tr>
+                          <th className="p-3.5">Assessment</th>
+                          <th className="p-3.5">Framework</th>
+                          <th className="p-3.5">Readiness</th>
+                          <th className="p-3.5">Approval</th>
+                          <th className="p-3.5 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {assessmentsList.map((a: any) => (
+                          <tr key={a.id} className="hover:bg-white/[0.02]">
+                            <td className="p-3.5">
+                              <div className="font-semibold text-slate-100">{a.title}</div>
+                              <div className="text-[10px] text-slate-400">{a.system_name || a.system_id}</div>
+                            </td>
+                            <td className="p-3.5 text-slate-300">{a.framework_id}</td>
+                            <td className="p-3.5 font-semibold text-sky-300">{Math.round(a.readiness_percentage || 0)}%</td>
+                            <td className="p-3.5">
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                                a.approval_status === "APPROVED" ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                                : a.approval_status === "SUBMITTED" ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                                : a.approval_status === "REJECTED" ? "bg-rose-500/10 text-rose-300 border-rose-500/30"
+                                : "bg-white/5 text-slate-400 border-white/10"}`}>
+                                {(a.approval_status || "NOT_SUBMITTED").replace(/_/g, " ").toLowerCase()}
+                              </span>
+                            </td>
+                            <td className="p-3.5 text-right">
+                              <button onClick={() => openAssessmentDetail(a.id)}
+                                className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-sky-400 text-[11px] border border-white/10">Open</button>
+                            </td>
+                          </tr>
+                        ))}
+                        {assessmentsList.length === 0 && (
+                          <tr><td colSpan={5} className="p-6 text-center text-xs text-slate-500">
+                            No assessments yet. Start one above, or use "Start assessment" from an AI system's next action.
+                          </td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
 
@@ -2705,8 +3093,47 @@ export default function AegisPlatform() {
             </div>
 
             <div className="space-y-3 text-xs">
+              {/* Governance workflow status bar (spec §41) */}
+              {(() => {
+                const wf = portfolioWorkflow.find((w: any) => w.system_id === selectedSystem.id);
+                if (!wf) return null;
+                const STEPS = ["Inventory", "Applicability", "Assessment", "Controls", "Evidence", "Testing", "Remediation", "Approval", "Report"];
+                return (
+                  <div className="p-3 rounded-lg bg-black/30 border border-white/5 space-y-2">
+                    <div className="flex items-center flex-wrap gap-1">
+                      {(wf.steps || []).map((s: any, i: number) => (
+                        <React.Fragment key={s.key}>
+                          <button
+                            onClick={() => { setSelectedSystem(null); continueGovernance(selectedSystem.id); }}
+                            title={s.label}
+                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold ${
+                              s.state === "done" ? "bg-emerald-500/15 text-emerald-300"
+                              : s.state === "active" ? "bg-sky-500/20 text-sky-200"
+                              : "bg-white/5 text-slate-500"}`}
+                          >
+                            {s.state === "done" ? <Check className="w-2.5 h-2.5" /> : <span>{i + 1}</span>}
+                            {s.label}
+                          </button>
+                          {i < STEPS.length - 1 && <span className="text-slate-700">·</span>}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                    {wf.next_action && (
+                      <button
+                        onClick={() => { setSelectedSystem(null); continueGovernance(selectedSystem.id); }}
+                        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold transition-colors"
+                      >
+                        <span>Continue governance: {wf.next_action.label}</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    )}
+                    <p className="text-[10px] text-slate-500">{wf.next_action?.helper}</p>
+                  </div>
+                );
+              })()}
+
               <p className="text-slate-300 leading-relaxed">{selectedSystem.description}</p>
-              
+
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="p-3 rounded-lg bg-black/30 border border-white/5">
                   <div className="text-[10px] text-slate-400 font-semibold">Technical Architecture</div>
@@ -2771,6 +3198,93 @@ export default function AegisPlatform() {
       {/* ========================================================================= */}
       {/* 5. MODAL: MANAGE CONTROL STATUS                                          */}
       {/* ========================================================================= */}
+      {openAssessment && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setOpenAssessment(null)}>
+          <div className="max-w-2xl w-full max-h-[85vh] overflow-y-auto rounded-2xl glass-panel p-6 space-y-4 border border-white/15" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between border-b border-white/10 pb-3">
+              <div>
+                <h2 className="text-sm font-bold text-white">{openAssessment.title}</h2>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  {openAssessment.system_name} · {openAssessment.framework_name || openAssessment.framework_id} · {openAssessment.responses?.length || 0} requirements
+                </div>
+              </div>
+              <button onClick={() => setOpenAssessment(null)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2 text-center">
+              {[["Readiness", openAssessment.readiness_percentage], ["Implemented", openAssessment.implementation_score], ["Evidence", openAssessment.evidence_score], ["Effective", openAssessment.effectiveness_score]].map(([l, v]: any) => (
+                <div key={l} className="p-2 rounded-lg bg-black/30 border border-white/5">
+                  <div className="text-base font-bold text-sky-300">{Math.round(v || 0)}%</div>
+                  <div className="text-[9px] text-slate-400">{l}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Approval workflow */}
+            <div className="p-3 rounded-lg bg-black/30 border border-white/5 space-y-2">
+              <div className="flex items-center gap-2 text-[11px]">
+                <span className="text-slate-400">Approval:</span>
+                <span className={`px-2 py-0.5 rounded-full border ${
+                  openAssessment.approval_status === "APPROVED" ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                  : openAssessment.approval_status === "SUBMITTED" ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                  : openAssessment.approval_status === "REJECTED" ? "bg-rose-500/10 text-rose-300 border-rose-500/30"
+                  : "bg-white/5 text-slate-400 border-white/10"}`}>
+                  {(openAssessment.approval_status || "NOT_SUBMITTED").replace(/_/g, " ").toLowerCase()}
+                </span>
+                {openAssessment.submitted_by && <span className="text-slate-500">submitted by {openAssessment.submitted_by}</span>}
+                {openAssessment.approved_by && <span className="text-slate-500">· by {openAssessment.approved_by}</span>}
+              </div>
+              <div className="flex gap-2">
+                {(openAssessment.approval_status === "NOT_SUBMITTED" || openAssessment.approval_status === "REJECTED") && (
+                  <button onClick={() => assessmentApprovalAction(openAssessment.id, "submit")} disabled={assessmentBusy}
+                    className="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-[11px] font-bold disabled:opacity-40">Submit for approval</button>
+                )}
+                {openAssessment.approval_status === "SUBMITTED" && (
+                  <>
+                    <button onClick={() => assessmentApprovalAction(openAssessment.id, "approve")} disabled={assessmentBusy}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-bold disabled:opacity-40">Approve</button>
+                    <button onClick={() => assessmentApprovalAction(openAssessment.id, "reject")} disabled={assessmentBusy}
+                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500 hover:text-white text-[11px] font-bold disabled:opacity-40">Reject</button>
+                  </>
+                )}
+                {openAssessment.approval_status === "APPROVED" && (
+                  <button onClick={() => { setOpenAssessment(null); setActiveTab("reports"); }}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-bold">Generate report →</button>
+                )}
+              </div>
+              <p className="text-[10px] text-slate-500">Approve/reject requires a Tenant Admin, Governance Lead, Compliance Manager, CISO or Legal Reviewer role.</p>
+            </div>
+
+            {/* Requirements (first 40, with quick status set) */}
+            <div className="space-y-1.5">
+              <div className="text-[11px] font-bold text-slate-300">Requirements</div>
+              {(openAssessment.responses || []).slice(0, 40).map((r: any) => (
+                <div key={r.requirement_id} className="flex items-center gap-2 p-2 rounded-lg bg-black/30 border border-white/5 text-[11px]">
+                  <span className="font-mono text-sky-300 flex-shrink-0">{r.article || r.requirement_id}</span>
+                  <span className="flex-1 min-w-0 truncate text-slate-300" title={r.normalized_requirement || r.title}>{r.title || r.normalized_requirement || r.requirement_id}</span>
+                  <select
+                    value={r.status || "Unknown"}
+                    onChange={async (e) => {
+                      try {
+                        await api.submitAssessmentResponse(openAssessment.id, { requirement_id: r.requirement_id, status: e.target.value, rationale: r.rationale || "Set from assessment view", evidence_ids: r.evidence_ids || [] });
+                        await openAssessmentDetail(openAssessment.id);
+                        api.getPortfolioWorkflow().then(setPortfolioWorkflow).catch(() => {});
+                      } catch (err: any) { alert(err?.message || "Could not save"); }
+                    }}
+                    className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-slate-200 flex-shrink-0"
+                  >
+                    {["Unknown", "Yes", "Partial", "No", "N/A"].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              ))}
+              {(openAssessment.responses || []).length > 40 && (
+                <div className="text-[10px] text-slate-500">Showing 40 of {openAssessment.responses.length}. Full per-requirement work continues here in a later iteration.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {selectedControl && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="max-w-lg w-full rounded-2xl glass-panel p-6 space-y-4 border border-white/15 animate-scaleUp">
@@ -2797,7 +3311,7 @@ export default function AegisPlatform() {
                     <div className="flex flex-wrap gap-1.5">
                       {maps.map((m: any, i: number) => (
                         <button key={i}
-                          onClick={() => { setSelectedControl(null); goToFrameworkRequirement(m.framework_id, m.requirement_id || m.article); }}
+                          onClick={() => { setSelectedControl(null); goToFrameworkRequirement(m.framework_id, m.requirement_id, m.article); }}
                           title={`${m.framework_name} ${m.article || m.requirement_id}${m.requirement_title ? " — " + m.requirement_title : ""} (${m.confidence})`}
                           className="text-[10px] font-mono text-sky-300 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20 hover:border-sky-400">
                           {m.framework_name}: {m.article || m.requirement_id} ↗

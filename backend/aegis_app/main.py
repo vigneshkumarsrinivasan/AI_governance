@@ -17,7 +17,7 @@ from aegis_app.api import (
     dashboard, reports, audit,
     model_registry, agent_registry, vendor_registry, org_structure, graph,
     regulatory as regulatory_api,
-    onboarding, sme,
+    onboarding, sme, organizations,
 )
 from aegis_app.seed.demo_data import seed_demo_data
 
@@ -113,6 +113,7 @@ app.include_router(graph.router, prefix=api_v1_prefix)
 app.include_router(regulatory_api.router, prefix=api_v1_prefix)
 app.include_router(onboarding.router, prefix=api_v1_prefix)
 app.include_router(sme.router, prefix=api_v1_prefix)
+app.include_router(organizations.router, prefix=api_v1_prefix)
 
 @app.get("/")
 async def root():

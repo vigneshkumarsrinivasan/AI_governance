@@ -17,6 +17,7 @@ import {
   Scale, BookOpen, ListChecks, Gauge, ExternalLink, Info,
 } from "lucide-react";
 import * as api from "@/lib/api";
+import CompanySwitcher from "@/components/CompanySwitcher";
 
 const EU = ["DE", "FR", "ES", "IT", "NL", "IE", "PL", "SE", "BE", "AT", "DK", "FI", "PT", "GR", "RO"];
 const COUNTRY_OPTS = [
@@ -679,8 +680,13 @@ export default function SmeExperience({
             AI Trust <span className="text-slate-500 font-medium">&amp; Compliance</span>
           </div>
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 text-sky-300">Simple</span>
+          <div className="ml-3">
+            <CompanySwitcher
+              activeName={user.organization_name}
+              onSwitched={async () => { const me = await api.refreshCurrentUser().catch(() => api.getCurrentUser()); if (me) onUserChange(me as any); }}
+            />
+          </div>
           <div className="ml-auto flex items-center gap-3">
-            <span className="text-[11px] text-slate-400 hidden sm:block">{user.organization_name}</span>
             <button
               onClick={switchToAdvanced}
               disabled={switching}

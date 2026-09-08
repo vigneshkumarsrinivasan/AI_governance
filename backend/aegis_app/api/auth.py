@@ -8,7 +8,7 @@ from sqlalchemy import select
 from aegis_app.core.database import get_db
 from aegis_app.core.security import verify_password, get_password_hash, create_access_token
 from aegis_app.core.permissions import SELF_SIGNUP_ALLOWED_ROLES
-from aegis_app.models.models import User, Tenant, Organization, OrganizationProfile
+from aegis_app.models.models import User, Tenant, Organization, OrganizationProfile, OrganizationMembership
 from aegis_app.schemas.schemas import Token, UserLogin, UserSignup, UserResponse, UIModeUpdate
 from aegis_app.api.deps import get_current_user
 
@@ -119,6 +119,11 @@ async def signup(payload: UserSignup, db: AsyncSession = Depends(get_db)):
         ui_mode="advanced" if requested_mode == "advanced" else "simple",
     )
     db.add(user)
+    await db.flush()
+    db.add(OrganizationMembership(
+        user_id=user.id, tenant_id=tenant.id, organization_id=org.id,
+        role=user.role, is_default=True,
+    ))
     await db.commit()
     await db.refresh(user)
 

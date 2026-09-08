@@ -1,0 +1,48 @@
+{
+  "version": "2026.1.0",
+  "note": "Sector starter packs (spec section 19). A pack is a curated emphasis - it re-weights the compliance profile and pre-selects frameworks/controls to focus on first. It never hides other frameworks and never asserts applicability the company facts don't support. HIPAA is intentionally absent (not implemented in the platform - do not invent it).",
+  "packs": [
+    {
+      "id": "b2b_ai_saas",
+      "name": "B2B AI SaaS",
+      "description": "The default for a 10-250 person company selling AI/software to enterprises.",
+      "focus_frameworks": ["eu_ai_act", "gdpr", "nist_ai_rmf", "nist_ai_600_1", "owasp_llm", "owasp_agentic_ai", "mitre_atlas", "soc2", "iso_27001", "iso_42001", "nist_sp_800_218"],
+      "priority_domains": ["AI Governance", "AI Security", "Privacy", "Secure Development", "Vendor Risk"]
+    },
+    {
+      "id": "fintech",
+      "name": "FinTech / InsurTech / RegTech",
+      "description": "Adds operational-resilience and supply-chain depth for companies in or selling to regulated finance.",
+      "focus_frameworks": ["dora", "nis2", "nist_sp_800_53", "nist_sp_800_161", "gdpr", "eu_ai_act", "soc2", "iso_27001", "owasp_llm"],
+      "priority_domains": ["Operational Resilience", "Vendor Risk", "AI Security", "Privacy", "AI Governance"]
+    },
+    {
+      "id": "healthtech",
+      "name": "HealthTech",
+      "description": "Emphasises sensitive-data protection, human oversight and vendor governance. Does not add HIPAA (not implemented).",
+      "focus_frameworks": ["gdpr", "eu_ai_act", "nist_ai_rmf", "nis2", "owasp_llm", "iso_27001", "soc2"],
+      "priority_domains": ["Privacy", "AI Governance", "AI Security", "Vendor Risk"]
+    },
+    {
+      "id": "hrtech",
+      "name": "HRTech / Recruitment AI",
+      "description": "For AI that supports employment decisions - high-risk under the EU AI Act.",
+      "focus_frameworks": ["eu_ai_act", "gdpr", "nist_ai_rmf", "owasp_llm", "iso_42001"],
+      "priority_domains": ["AI Governance", "Privacy", "AI Security"]
+    },
+    {
+      "id": "india_it_services",
+      "name": "India IT / AI Services",
+      "description": "For Indian companies selling AI/software to EU, UK, Singapore or US enterprises.",
+      "focus_frameworks": ["india_dpdp", "gdpr", "eu_ai_act", "nist_ai_rmf", "owasp_llm", "soc2", "iso_27001"],
+      "priority_domains": ["Privacy", "AI Security", "Secure Development", "AI Governance"]
+    },
+    {
+      "id": "cra_digital_product",
+      "name": "CRA / Connected Product",
+      "description": "For IoT / connected-hardware / embedded-software companies placing products on the EU market.",
+      "focus_frameworks": ["eu_cra", "nist_sp_800_218", "nist_sp_800_218a", "nist_csf_2", "nist_sp_800_161", "owasp_llm"],
+      "priority_domains": ["Secure Development", "Vulnerability Management", "Supply Chain", "AI Security"]
+    }
+  ]
+}

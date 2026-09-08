@@ -8,6 +8,7 @@ import {
   Building, User, Cpu, AlertOctagon, HelpCircle, Check, Clock
 } from "lucide-react";
 import * as api from "@/lib/api";
+import SmeExperience from "@/components/sme/SmeExperience";
 
 export default function AegisPlatform() {
   const [authChecked, setAuthChecked] = useState<boolean>(false);
@@ -178,7 +179,7 @@ export default function AegisPlatform() {
     const user = api.getCurrentUser();
     setCurrentUser(user);
     setAuthChecked(true);
-    if (user) {
+    if (user && user.ui_mode !== "simple") {
       loadPlatformData();
     } else {
       setLoading(false);
@@ -187,7 +188,7 @@ export default function AegisPlatform() {
 
   const handleLoginSuccess = (user: api.CurrentUser) => {
     setCurrentUser(user);
-    loadPlatformData();
+    if (user.ui_mode !== "simple") loadPlatformData();
   };
 
   // Handle Intake Evaluation
@@ -430,6 +431,21 @@ export default function AegisPlatform() {
     return <LoginScreen onSuccess={handleLoginSuccess} />;
   }
 
+  // SME "simple" experience - same backend, guided lens. Switching to advanced
+  // flips ui_mode and drops through to the full enterprise console below.
+  if (currentUser.ui_mode === "simple") {
+    return (
+      <SmeExperience
+        user={currentUser}
+        onUserChange={(u) => {
+          setCurrentUser(u);
+          if (u.ui_mode !== "simple") loadPlatformData();
+        }}
+        onLogout={() => { api.logout(); setCurrentUser(null); }}
+      />
+    );
+  }
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#090D16] text-[#F8FAFC]">
       {/* ========================================================================= */}
@@ -582,6 +598,18 @@ export default function AegisPlatform() {
               Sign out
             </button>
           </div>
+          <button
+            onClick={async () => {
+              try {
+                const u = await api.setUiMode("simple");
+                setCurrentUser(u);
+              } catch { /* ignore */ }
+            }}
+            className="mt-2 w-full text-[10px] text-slate-500 hover:text-sky-300 py-1 rounded hover:bg-white/5 transition-colors"
+            title="Switch to the simplified SME view (same data, guided experience)"
+          >
+            Switch to simple view
+          </button>
         </div>
       </aside>
 
@@ -654,7 +682,7 @@ export default function AegisPlatform() {
                           <Shield className="w-3.5 h-3.5" /> Enterprise AI Trust & Compliance Baseline
                         </div>
                         <h1 className="text-2xl font-bold tracking-tight text-white">
-                          Acme Financial AI Governance Health: <span className="text-sky-400">{metrics.overall_readiness_percentage}% Readiness</span>
+                          {(currentUser?.organization_name || "Your organization")} AI Governance Health: <span className="text-sky-400">{metrics.overall_readiness_percentage}% Readiness</span>
                         </h1>
                         <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
                           Unified compliance across 17 authoritative international standards including EU AI Act, NIST AI RMF, NIST AI 600-1, OWASP LLM, CRA, GDPR, and DORA.

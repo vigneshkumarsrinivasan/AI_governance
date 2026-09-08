@@ -32,6 +32,9 @@ class UserSignup(BaseModel):
     # (see core/permissions.SELF_SIGNUP_ALLOWED_ROLES) - a new signup always
     # becomes the founding Tenant Admin of its tenant.
     role: str = "Tenant Admin"
+    # "simple" (default, SME guided experience) or "advanced" (full enterprise
+    # experience). Switchable any time via PATCH /auth/me/ui-mode.
+    ui_mode: str = "simple"
 
 class UserResponse(BaseModel):
     id: str
@@ -43,10 +46,16 @@ class UserResponse(BaseModel):
     full_name: str
     role: str
     is_active: bool
+    ui_mode: str = "advanced"
+    onboarding_completed: bool = False
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class UIModeUpdate(BaseModel):
+    ui_mode: str = Field(pattern="^(simple|advanced)$")
 
 # ---------------------------------------------------------
 # AI System & Intake Schemas
@@ -579,4 +588,126 @@ class VendorResponse(VendorCreate):
     tenant_id: str
     created_at: datetime
     updated_at: Optional[datetime] = None
+
+
+# ---------------------------------------------------------
+# SME onboarding + company applicability + Trust Score (spec sections 5-7, 16)
+# ---------------------------------------------------------
+class OnboardingProfileInput(BaseModel):
+    """Company onboarding questionnaire (spec section 5). Every field has a
+    default so the wizard can PATCH partial progress; `completed` is set true
+    only on the final step. `answers` echoes the raw wizard state for audit."""
+    model_config = ConfigDict(extra="allow")
+
+    company_name: Optional[str] = None
+    headquarters_country: str = "US"
+    operating_countries: List[str] = Field(default_factory=list)
+    employee_count: int = 20
+    industry: str = "b2b_saas"
+    sells_to_enterprises: bool = True
+    sells_to_government: bool = False
+    sells_to_financial_institutions: bool = False
+    sells_to_healthcare: bool = False
+
+    develops_ai_products: bool = True
+    deploys_ai_internally: bool = True
+    uses_generative_ai: bool = True
+    builds_ai_agents: bool = False
+    uses_rag: bool = False
+    uses_third_party_models: bool = True
+    makes_decisions_about_people: bool = False
+    decision_domains: List[str] = Field(default_factory=list)
+    uses_biometrics: bool = False
+
+    ai_providers: List[str] = Field(default_factory=list)
+    data_types: List[str] = Field(default_factory=list)
+
+    sells_software: bool = True
+    is_saas: bool = True
+    sells_connected_hardware: bool = False
+    is_iot: bool = False
+    has_embedded_software: bool = False
+    is_cybersecurity_product: bool = False
+    product_marketed_in_eu: bool = False
+
+    soc2_required: bool = False
+    iso27001_required: bool = False
+    gets_security_questionnaires: bool = True
+    existing_certifications: List[str] = Field(default_factory=list)
+    has_compliance_staff: bool = False
+    has_security_staff: bool = False
+
+    starter_pack: Optional[str] = None
+    completed: bool = False
+    answers: Dict[str, Any] = Field(default_factory=dict)
+
+
+class FrameworkExposureItem(BaseModel):
+    framework_key: str
+    framework_name: str
+    regulation_type: str
+    exposure: str
+    exposure_label: str
+    confidence: str
+    jurisdiction: str
+    reasoning: str
+    source_reference: str
+    triggering_facts: List[str]
+    open_questions: List[str]
+    decision_status: str
+    rule_id: str
+    contributing_rule_ids: List[str] = Field(default_factory=list)
+
+
+class CompanyApplicabilityResponse(BaseModel):
+    ruleset_version: str
+    generated_at: datetime
+    profile_complete: bool
+    exposures: List[FrameworkExposureItem]
+    legal_review_recommended: bool
+    legal_review_frameworks: List[str]
+    open_questions: List[str]
+    summary: Dict[str, int]
+    disclaimer: str
+    decision_id: Optional[str] = None
+
+
+class TrustScoreDimension(BaseModel):
+    key: str
+    label: str
+    score: float
+    basis: str
+
+
+class TrustScoreResponse(BaseModel):
+    ai_trust_score: float
+    computed_at: datetime
+    dimensions: List[TrustScoreDimension]
+    controls_total: int
+    controls_implemented: int
+    controls_with_evidence: int
+    open_findings: Dict[str, int]
+    evidence_freshness_days: Optional[float] = None
+    inventory: Dict[str, int]
+    method: str
+    has_data: bool
+
+
+class NextAction(BaseModel):
+    id: str
+    title: str
+    why_it_matters: str
+    risk: str
+    bucket: str          # TODAY | THIS_WEEK | NEXT
+    estimated_minutes: int
+    affected_areas: List[str]
+    steps: List[str]
+    actions: List[str]   # Fix | Assign | Generate Policy | Upload Evidence | Register
+    source: str
+
+
+class NextActionsResponse(BaseModel):
+    generated_at: datetime
+    actions: List[NextAction]
+    counts: Dict[str, int]
     model_config = ConfigDict(from_attributes=True)

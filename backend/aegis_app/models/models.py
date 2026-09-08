@@ -95,8 +95,13 @@ class User(Base):
     # CISO/Security, Privacy/DPO, AI Engineer, Model Owner, Auditor, Viewer
     role = Column(String(50), default="AI Governance Lead", nullable=False)
     is_active = Column(Boolean, default=True)
+    # UI experience mode: "simple" (SME/founder view - progressive disclosure) or
+    # "advanced" (full enterprise framework/control depth). Defaults to "advanced"
+    # so every pre-existing user keeps exactly the experience they have today;
+    # new SME signups are set to "simple" by the signup flow.
+    ui_mode = Column(String(20), default="advanced", nullable=False)
     created_at = Column(DateTime, default=utc_now)
-    
+
     tenant = relationship("Tenant", back_populates="users")
 
 # ---------------------------------------------------------
@@ -600,6 +605,77 @@ class ApplicabilityDecision(Base):
     assessed_as_of_date = Column(DateTime, default=utc_now)  # spec #112/#113: "as of" temporal logic
     created_at = Column(DateTime, default=utc_now)
     superseded_by_id = Column(String(36), nullable=True)  # link to a later re-assessment; history is never overwritten
+
+    # "system" (per-AI-system intake, the original behaviour) or "organization"
+    # (company-wide onboarding applicability). Defaults to "system" so every
+    # existing row keeps its original meaning.
+    scope = Column(String(20), default="system", nullable=False)
+    # Company-scope only: [{framework_key, framework_name, exposure, confidence,
+    # reasoning, jurisdiction, basis, source_reference, category}] - the full
+    # explainable framework-exposure map from the company applicability engine.
+    framework_exposure = Column(JSON, default=list)
+    # Facts we still need from the customer before applicability can be firmed up.
+    open_questions = Column(JSON, default=list)
+
+
+class OrganizationProfile(Base):
+    """
+    Company-level compliance/AI-risk profile captured by the SME onboarding
+    wizard (spec sections 5-7). One row per organization. This is ADDITIVE - it
+    never replaces the Organization row; it enriches it with the fuller fact set
+    the applicability engine and Trust Score need. `answers` stores the raw
+    questionnaire exactly as submitted (reproducibility); the flat columns are
+    the normalised facts the rule engine consumes.
+    """
+    __tablename__ = "organization_profiles"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id = Column(String(36), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+
+    answers = Column(JSON, default=dict)          # raw questionnaire as submitted
+    # Normalised company facts (mirrors of answers, used by company_rule_engine)
+    headquarters_country = Column(String(8), default="US")
+    operating_countries = Column(JSON, default=list)      # ISO codes: ["DE","GB","IN","SG","US"]
+    employee_count = Column(Integer, default=20)
+    industry = Column(String(80), default="b2b_saas")
+    sells_to_enterprises = Column(Boolean, default=True)
+    sells_to_government = Column(Boolean, default=False)
+    sells_to_financial_institutions = Column(Boolean, default=False)
+    sells_to_healthcare = Column(Boolean, default=False)
+
+    develops_ai_products = Column(Boolean, default=True)
+    deploys_ai_internally = Column(Boolean, default=True)
+    uses_generative_ai = Column(Boolean, default=True)
+    builds_ai_agents = Column(Boolean, default=False)
+    uses_rag = Column(Boolean, default=False)
+    uses_third_party_models = Column(Boolean, default=True)
+    makes_decisions_about_people = Column(Boolean, default=False)
+    decision_domains = Column(JSON, default=list)         # employment, credit, healthcare, education, biometrics, safety
+    uses_biometrics = Column(Boolean, default=False)
+
+    ai_providers = Column(JSON, default=list)             # ["openai","anthropic","google","azure_openai","aws_bedrock",...]
+    data_types = Column(JSON, default=list)               # personal, employee, health, financial, biometric, children, payment, source_code, confidential_customer
+
+    sells_software = Column(Boolean, default=True)
+    is_saas = Column(Boolean, default=True)
+    sells_connected_hardware = Column(Boolean, default=False)
+    is_iot = Column(Boolean, default=False)
+    has_embedded_software = Column(Boolean, default=False)
+    is_cybersecurity_product = Column(Boolean, default=False)
+    product_marketed_in_eu = Column(Boolean, default=False)
+
+    soc2_required = Column(Boolean, default=False)
+    iso27001_required = Column(Boolean, default=False)
+    gets_security_questionnaires = Column(Boolean, default=True)
+    existing_certifications = Column(JSON, default=list)
+    has_compliance_staff = Column(Boolean, default=False)
+    has_security_staff = Column(Boolean, default=False)
+
+    starter_pack = Column(String(40), nullable=True)      # applied sector pack id
+    completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
 
 class IncidentReport(Base):

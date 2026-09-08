@@ -17,6 +17,7 @@ from aegis_app.api import (
     dashboard, reports, audit,
     model_registry, agent_registry, vendor_registry, org_structure, graph,
     regulatory as regulatory_api,
+    onboarding, sme,
 )
 from aegis_app.seed.demo_data import seed_demo_data
 
@@ -71,6 +72,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    """Baseline security response headers (OWASP secure headers)."""
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+    response.headers.setdefault("Permissions-Policy", "geolocation=(), camera=(), microphone=()")
+    # API serves JSON only; a strict CSP is safe here and blocks any injected markup.
+    # The interactive docs pages (/docs, /redoc) legitimately load a CDN bundle.
+    if not request.url.path.rstrip("/").endswith(("/docs", "/redoc")):
+        response.headers.setdefault("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+    if settings.ENVIRONMENT == "production":
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
+
 # Register API v1 Routers
 api_v1_prefix = settings.API_V1_STR
 app.include_router(auth.router, prefix=api_v1_prefix)
@@ -92,6 +111,8 @@ app.include_router(vendor_registry.router, prefix=api_v1_prefix)
 app.include_router(org_structure.router, prefix=api_v1_prefix)
 app.include_router(graph.router, prefix=api_v1_prefix)
 app.include_router(regulatory_api.router, prefix=api_v1_prefix)
+app.include_router(onboarding.router, prefix=api_v1_prefix)
+app.include_router(sme.router, prefix=api_v1_prefix)
 
 @app.get("/")
 async def root():

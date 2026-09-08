@@ -1,0 +1,83 @@
+{
+  "version": "2026.1.0",
+  "note": "SOC 2 and ISO/IEC 27001/42001 support (spec section 3). These standards are COPYRIGHTED (AICPA / ISO). This file stores ONLY: our own metadata, publicly-stated structure names, and mappings FROM our Unified Control Library TO the standard's clause/criteria identifiers. It contains NO reproduced standard text, NO control wording, NO requirement text. `content_availability: METADATA_ONLY` signals the UI to show structure + mappings + an 'upload your licensed copy' affordance. When a customer loads a licensed copy, a real FrameworkVersion is created and this metadata is superseded.",
+  "frameworks": [
+    {
+      "framework_key": "soc2",
+      "framework_name": "SOC 2 (AICPA Trust Services Criteria)",
+      "framework_family": "SOC 2",
+      "authority": "AICPA (American Institute of Certified Public Accountants)",
+      "jurisdiction": "United States (attestation standard; global market expectation)",
+      "framework_type": "CERTIFICATION",
+      "regulation_type": "CERTIFICATION",
+      "official_url": "https://www.aicpa-cima.com/resources/landing/system-and-organization-controls-soc-suite-of-services",
+      "licence_status": "COPYRIGHTED_CUSTOMER_LICENCE_REQUIRED",
+      "content_availability": "METADATA_ONLY",
+      "public_structure": {
+        "trust_services_categories": ["Security (Common Criteria)", "Availability", "Confidentiality", "Processing Integrity", "Privacy"],
+        "common_criteria_series": ["CC1 Control Environment", "CC2 Communication & Information", "CC3 Risk Assessment", "CC4 Monitoring Activities", "CC5 Control Activities", "CC6 Logical & Physical Access", "CC7 System Operations", "CC8 Change Management", "CC9 Risk Mitigation"],
+        "report_types": ["Type I (design at a point in time)", "Type II (design + operating effectiveness over a period)"]
+      },
+      "unified_control_mappings": [
+        {"criteria_id": "CC1", "unified_control_code": "UC-AI-GOV-001", "strength": "RELATED", "rationale": "Governance/ethical principles support the control environment.", "review_status": "AI_SUGGESTED"},
+        {"criteria_id": "CC2", "unified_control_code": "UC-AI-GOV-002", "strength": "RELATED", "rationale": "RACI / oversight roles support communication of responsibilities.", "review_status": "AI_SUGGESTED"},
+        {"criteria_id": "CC3", "unified_control_code": "UC-AI-RSK-001", "strength": "STRONG", "rationale": "Continuous lifecycle risk assessment aligns with CC3.", "review_status": "AI_SUGGESTED"},
+        {"criteria_id": "CC4", "unified_control_code": "UC-AI-LOG-001", "strength": "PARTIAL", "rationale": "Logging/monitoring supports monitoring activities.", "review_status": "AI_SUGGESTED"},
+        {"criteria_id": "CC6", "unified_control_code": "UC-AI-AGT-002", "strength": "PARTIAL", "rationale": "Agent permission boundaries contribute to logical access control.", "review_status": "AI_SUGGESTED"},
+        {"criteria_id": "CC7", "unified_control_code": "UC-AI-INC-001", "strength": "STRONG", "rationale": "Incident management aligns with system operations criteria.", "review_status": "AI_SUGGESTED"},
+        {"criteria_id": "CC8", "unified_control_code": "UC-AI-SC-002", "strength": "PARTIAL", "rationale": "Secure development / change control overlap.", "review_status": "AI_SUGGESTED"},
+        {"criteria_id": "CC9", "unified_control_code": "UC-AI-VND-001", "strength": "PARTIAL", "rationale": "Vendor risk assessment contributes to risk mitigation.", "review_status": "AI_SUGGESTED"}
+      ]
+    },
+    {
+      "framework_key": "iso_27001",
+      "framework_name": "ISO/IEC 27001 - Information Security Management Systems",
+      "framework_family": "ISO/IEC 27001",
+      "authority": "ISO/IEC",
+      "jurisdiction": "International (accredited certification)",
+      "framework_type": "CERTIFICATION",
+      "regulation_type": "CERTIFICATION",
+      "official_url": "https://www.iso.org/standard/27001",
+      "licence_status": "COPYRIGHTED_CUSTOMER_LICENCE_REQUIRED",
+      "content_availability": "METADATA_ONLY",
+      "public_structure": {
+        "management_clauses": ["4 Context", "5 Leadership", "6 Planning", "7 Support", "8 Operation", "9 Performance evaluation", "10 Improvement"],
+        "annex_a_2022_themes": ["A.5 Organizational (37)", "A.6 People (8)", "A.7 Physical (14)", "A.8 Technological (34)"],
+        "artifacts": ["Statement of Applicability (SoA)", "Risk treatment plan", "ISMS scope"]
+      },
+      "unified_control_mappings": [
+        {"clause_id": "A.5", "unified_control_code": "UC-AI-GOV-001", "strength": "RELATED", "rationale": "Organizational policies for AI security.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.5.19", "unified_control_code": "UC-AI-VND-001", "strength": "STRONG", "rationale": "Supplier relationships / third-party AI risk.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.8", "unified_control_code": "UC-AI-SEC-001", "strength": "PARTIAL", "rationale": "Technological controls incl. AI/LLM security.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.8.16", "unified_control_code": "UC-AI-LOG-001", "strength": "STRONG", "rationale": "Monitoring activities / logging.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "6", "unified_control_code": "UC-AI-RSK-001", "strength": "STRONG", "rationale": "Risk assessment and treatment planning.", "review_status": "AI_SUGGESTED"}
+      ]
+    },
+    {
+      "framework_key": "iso_42001",
+      "framework_name": "ISO/IEC 42001 - AI Management System",
+      "framework_family": "ISO/IEC 42001",
+      "authority": "ISO/IEC",
+      "jurisdiction": "International (accredited certification)",
+      "framework_type": "CERTIFICATION",
+      "regulation_type": "CERTIFICATION",
+      "official_url": "https://www.iso.org/standard/42001",
+      "licence_status": "COPYRIGHTED_CUSTOMER_LICENCE_REQUIRED",
+      "content_availability": "METADATA_ONLY",
+      "public_structure": {
+        "management_clauses": ["4 Context of the organization", "5 Leadership", "6 Planning", "7 Support", "8 Operation", "9 Performance evaluation", "10 Improvement"],
+        "annex_a_controls_themes": ["Policies for AI", "Internal organization", "Resources for AI systems", "AI system impact assessment", "AI system lifecycle", "Data for AI systems", "Information for interested parties", "Use of AI systems", "Third-party relationships"],
+        "artifacts": ["AI policy", "AI system impact assessment", "AIMS scope"]
+      },
+      "unified_control_mappings": [
+        {"clause_id": "A.2", "unified_control_code": "UC-AI-GOV-001", "strength": "STRONG", "rationale": "Policies for AI.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.3", "unified_control_code": "UC-AI-GOV-002", "strength": "STRONG", "rationale": "Internal organization / roles for AI.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.4", "unified_control_code": "UC-AI-INV-001", "strength": "STRONG", "rationale": "Resources / AI system inventory.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.5", "unified_control_code": "UC-AI-RSK-001", "strength": "STRONG", "rationale": "AI system impact assessment.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.6", "unified_control_code": "UC-AI-SC-002", "strength": "STRONG", "rationale": "AI system lifecycle / secure development.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.7", "unified_control_code": "UC-AI-DAT-001", "strength": "STRONG", "rationale": "Data for AI systems.", "review_status": "AI_SUGGESTED"},
+        {"clause_id": "A.10", "unified_control_code": "UC-AI-VND-001", "strength": "STRONG", "rationale": "Third-party relationships.", "review_status": "AI_SUGGESTED"}
+      ]
+    }
+  ]
+}

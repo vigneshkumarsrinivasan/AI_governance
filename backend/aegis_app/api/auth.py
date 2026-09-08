@@ -8,14 +8,25 @@ from sqlalchemy import select
 from aegis_app.core.database import get_db
 from aegis_app.core.security import verify_password, get_password_hash, create_access_token
 from aegis_app.core.permissions import SELF_SIGNUP_ALLOWED_ROLES
-from aegis_app.models.models import User, Tenant, Organization
-from aegis_app.schemas.schemas import Token, UserLogin, UserSignup, UserResponse
+from aegis_app.models.models import User, Tenant, Organization, OrganizationProfile
+from aegis_app.schemas.schemas import Token, UserLogin, UserSignup, UserResponse, UIModeUpdate
 from aegis_app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-def _user_payload(user: User, organization_name: str = None, is_demo_tenant: bool = False) -> dict:
+async def _onboarding_completed(db: AsyncSession, organization_id) -> bool:
+    if not organization_id:
+        return False
+    row = await db.execute(
+        select(OrganizationProfile).where(OrganizationProfile.organization_id == organization_id)
+    )
+    prof = row.scalars().first()
+    return bool(prof and prof.completed_at)
+
+
+def _user_payload(user: User, organization_name: str = None, is_demo_tenant: bool = False,
+                  onboarding_completed: bool = False) -> dict:
     return {
         "id": user.id,
         "email": user.email,
@@ -25,6 +36,8 @@ def _user_payload(user: User, organization_name: str = None, is_demo_tenant: boo
         "organization_id": user.organization_id,
         "organization_name": organization_name,
         "is_demo_tenant": is_demo_tenant,
+        "ui_mode": user.ui_mode,
+        "onboarding_completed": onboarding_completed,
     }
 
 
@@ -54,7 +67,10 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": _user_payload(user, org.name if org else None, org.is_demo if org else False),
+        "user": _user_payload(
+            user, org.name if org else None, org.is_demo if org else False,
+            await _onboarding_completed(db, user.organization_id),
+        ),
     }
 
 
@@ -88,14 +104,19 @@ async def signup(payload: UserSignup, db: AsyncSession = Depends(get_db)):
     # Additional users/roles must be provisioned by a Tenant Admin after signup.
     signup_role = payload.role if payload.role in SELF_SIGNUP_ALLOWED_ROLES else SELF_SIGNUP_ALLOWED_ROLES[0]
 
-    # Create user
+    # Create user. New self-service signups land in "simple" (SME) mode by
+    # default - the guided experience. They can switch to "advanced" any time
+    # via PATCH /auth/me/ui-mode. Pre-existing users are untouched (their
+    # column default is "advanced").
+    requested_mode = getattr(payload, "ui_mode", "simple")
     user = User(
         tenant_id=tenant.id,
         organization_id=org.id,
         email=payload.email,
         hashed_password=get_password_hash(payload.password),
         full_name=payload.full_name,
-        role=signup_role
+        role=signup_role,
+        ui_mode="advanced" if requested_mode == "advanced" else "simple",
     )
     db.add(user)
     await db.commit()
@@ -108,8 +129,37 @@ async def signup(payload: UserSignup, db: AsyncSession = Depends(get_db)):
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": _user_payload(user, org.name, org.is_demo),
+        "user": _user_payload(user, org.name, org.is_demo, False),
     }
+
+
+@router.patch("/me/ui-mode", response_model=UserResponse)
+async def set_ui_mode(
+    payload: UIModeUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Switch between the SME 'simple' experience and the full 'advanced'
+    enterprise experience. Both use the same backend - this only changes which
+    navigation/screens the frontend renders. No capability is removed."""
+    current_user.ui_mode = payload.ui_mode
+    await db.commit()
+    await db.refresh(current_user)
+    org = None
+    if current_user.organization_id:
+        org_result = await db.execute(select(Organization).where(Organization.id == current_user.organization_id))
+        org = org_result.scalars().first()
+    return UserResponse(
+        id=current_user.id, tenant_id=current_user.tenant_id,
+        organization_id=current_user.organization_id,
+        organization_name=org.name if org else None,
+        is_demo_tenant=org.is_demo if org else False,
+        email=current_user.email, full_name=current_user.full_name,
+        role=current_user.role, is_active=current_user.is_active,
+        ui_mode=current_user.ui_mode,
+        onboarding_completed=await _onboarding_completed(db, current_user.organization_id),
+        created_at=current_user.created_at,
+    )
 
 
 @router.get("/me", response_model=UserResponse)
@@ -132,5 +182,7 @@ async def get_me(
         full_name=current_user.full_name,
         role=current_user.role,
         is_active=current_user.is_active,
+        ui_mode=current_user.ui_mode,
+        onboarding_completed=await _onboarding_completed(db, current_user.organization_id),
         created_at=current_user.created_at,
     )

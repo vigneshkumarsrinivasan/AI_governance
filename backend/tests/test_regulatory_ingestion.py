@@ -208,6 +208,44 @@ async def test_regulatory_requires_auth(client):
     assert (await client.get("/api/v1/regulatory/frameworks")).status_code == 401
 
 
+@pytest.mark.asyncio
+async def test_assessment_uses_ingested_regulatory_requirements(client, sync_session):
+    """Spec sections 27 / 35 / 50: an assessment for an ingested framework must
+    generate from the full source-traceable requirement set, not the legacy
+    hand-authored ~10-question JSON."""
+    from aegis_app.regulatory.pipeline import ingest_framework
+    from aegis_app.models.regulatory import FrameworkVersion
+
+    res = ingest_framework(sync_session, "nist_ai_rmf")
+    sync_session.commit()
+    if res.get("status") in ("BLOCKED", "SOURCE_RETRIEVAL_BLOCKED"):
+        pytest.skip("NIST.AI.100-1.pdf not available")
+    fv = (sync_session.query(FrameworkVersion)
+          .filter_by(framework_key="nist_ai_rmf").order_by(FrameworkVersion.created_at.desc()).first())
+    expected = fv.ingested_counts["requirements"]
+    assert expected >= 60  # AI RMF has 72 subcategory-level requirements
+
+    acct = await _signup(client, email=f"assess-{uuid.uuid4().hex[:8]}@example.com")
+    h = {"Authorization": f"Bearer {acct['access_token']}"}
+    sysr = await client.post("/api/v1/ai-systems", json={"name": "RMF Test System"}, headers=h)
+    sid = sysr.json()["id"]
+
+    created = await client.post("/api/v1/assessments", json={
+        "title": "AI RMF assessment", "framework_id": "nist_ai_rmf", "system_id": sid}, headers=h)
+    assert created.status_code == 200, created.text
+    body = created.json()
+    assert body["requirement_count"] == expected
+    assert body["requirement_source"].startswith("regulatory:")
+
+    detail = await client.get(f"/api/v1/assessments/{body['id']}", headers=h)
+    assert detail.status_code == 200
+    responses = detail.json()["responses"]
+    assert len(responses) == expected
+    # each item is source-traceable
+    assert all(r["requirement_id"].startswith("NIST-AIRMF-") for r in responses)
+    assert any(r.get("source_text") for r in responses)
+
+
 # --------------------------------------------------------------------------
 # Operator-supplied local documents (EU docx)
 # --------------------------------------------------------------------------

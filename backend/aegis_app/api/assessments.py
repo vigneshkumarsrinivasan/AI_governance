@@ -12,11 +12,48 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from aegis_app.core.database import get_db
 from aegis_app.models.models import Assessment, AssessmentResponse, AISystem, User, AuditEvent
+from aegis_app.models.regulatory import FrameworkVersion, RegulatoryRequirement
 from aegis_app.schemas.schemas import AssessmentCreate, AssessmentResponseInput, AssessmentDetailResponse
 from aegis_app.services.crosswalk import crosswalk_service
 from aegis_app.api.deps import get_current_user
 
 router = APIRouter(prefix="/assessments", tags=["Assessments"])
+
+
+async def _regulatory_requirements(db: AsyncSession, framework_id: str) -> Dict[str, Dict[str, Any]]:
+    """Return {requirement_key: metadata} from the latest ingested regulatory
+    framework version for ``framework_id``, or {} if none is ingested.
+
+    This is the authoritative, source-traceable requirement set (spec sections
+    27, 35, 50). Falls back to the legacy hand-authored JSON only when a
+    framework has not been ingested via aegis_app.regulatory.
+    """
+    fv = (await db.execute(
+        select(FrameworkVersion).where(FrameworkVersion.framework_key == framework_id)
+        .order_by(FrameworkVersion.is_current.desc(), FrameworkVersion.created_at.desc())
+    )).scalars().first()
+    if not fv:
+        return {}
+    reqs = (await db.execute(
+        select(RegulatoryRequirement).where(RegulatoryRequirement.framework_version_id == fv.id)
+        .order_by(RegulatoryRequirement.requirement_key)
+    )).scalars().all()
+    out: Dict[str, Dict[str, Any]] = {}
+    for r in reqs:
+        out[r.requirement_key] = {
+            "article": r.source_reference,
+            "title": r.source_reference,
+            "normalized_requirement": r.normalized_requirement,
+            "source_text": r.source_text,
+            "obligation_type": r.obligation_type,
+            "domain": r.domain,
+            "official_url": r.source_anchor_url or "",
+            "evidence_expected": [e.get("description") for e in (r.evidence_expectations or [])],
+            "review_status": r.review_status,
+            "_source": "regulatory",
+            "_framework_version": fv.version_label,
+        }
+    return out
 
 @router.get("", response_model=List[Dict[str, Any]])
 async def list_assessments(
@@ -53,10 +90,11 @@ async def create_assessment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    fw = crosswalk_service.get_framework(payload.framework_id)
-    if not fw:
-        raise HTTPException(status_code=404, detail="Framework not found")
-        
+    reg_meta = await _regulatory_requirements(db, payload.framework_id)
+    legacy_fw = crosswalk_service.get_framework(payload.framework_id)
+    if not reg_meta and not legacy_fw:
+        raise HTTPException(status_code=404, detail="Framework not found (not ingested and not in legacy catalog)")
+
     assessment = Assessment(
         tenant_id=current_user.tenant_id,
         organization_id=current_user.organization_id or current_user.tenant_id,
@@ -68,21 +106,30 @@ async def create_assessment(
     )
     db.add(assessment)
     await db.flush()
-    
-    # Pre-populate responses for all requirements in this framework
-    for ch in fw.get("chapters", []):
-        for req in ch.get("requirements", []):
-            resp = AssessmentResponse(
-                assessment_id=assessment.id,
-                requirement_id=req["id"],
-                status="Unknown",
-                rationale="Pending initial compliance review"
-            )
-            db.add(resp)
-            
+
+    if reg_meta:
+        # Authoritative, source-traceable requirement set (spec sections 27, 35, 50).
+        for req_key in reg_meta:
+            db.add(AssessmentResponse(
+                assessment_id=assessment.id, requirement_id=req_key,
+                status="Unknown", rationale="Pending initial compliance review",
+            ))
+        req_count = len(reg_meta)
+        req_source = f"regulatory:{reg_meta[next(iter(reg_meta))]['_framework_version']}"
+    else:
+        for ch in legacy_fw.get("chapters", []):
+            for req in ch.get("requirements", []):
+                db.add(AssessmentResponse(
+                    assessment_id=assessment.id, requirement_id=req["id"],
+                    status="Unknown", rationale="Pending initial compliance review",
+                ))
+        req_count = sum(len(ch.get("requirements", [])) for ch in legacy_fw.get("chapters", []))
+        req_source = "legacy"
+
     await db.commit()
     await db.refresh(assessment)
-    return {"id": assessment.id, "title": assessment.title, "status": assessment.status}
+    return {"id": assessment.id, "title": assessment.title, "status": assessment.status,
+            "requirement_count": req_count, "requirement_source": req_source}
 
 @router.get("/{assessment_id}", response_model=AssessmentDetailResponse)
 async def get_assessment(
@@ -99,16 +146,18 @@ async def get_assessment(
     if not assessment:
         raise HTTPException(status_code=404, detail="Assessment not found")
         
-    fw = crosswalk_service.get_framework(assessment.framework_id)
-    fw_name = fw["name"] if fw else assessment.framework_id
-    
-    # Map requirement metadata
-    req_meta = {}
-    if fw:
-        for ch in fw.get("chapters", []):
-            for req in ch.get("requirements", []):
-                req_meta[req["id"]] = req
-                
+    req_meta = await _regulatory_requirements(db, assessment.framework_id)
+    if req_meta:
+        fw = None
+        fw_name = f"{assessment.framework_id} (regulatory {req_meta[next(iter(req_meta))]['_framework_version']})"
+    else:
+        fw = crosswalk_service.get_framework(assessment.framework_id)
+        fw_name = fw["name"] if fw else assessment.framework_id
+        if fw:
+            for ch in fw.get("chapters", []):
+                for req in ch.get("requirements", []):
+                    req_meta[req["id"]] = req
+
     responses_data = []
     for r in assessment.responses:
         meta = req_meta.get(r.requirement_id, {})
@@ -118,6 +167,8 @@ async def get_assessment(
             "article": meta.get("article", ""),
             "title": meta.get("title", r.requirement_id),
             "normalized_requirement": meta.get("normalized_requirement", ""),
+            "source_text": meta.get("source_text"),
+            "obligation_type": meta.get("obligation_type"),
             "status": r.status,
             "rationale": r.rationale,
             "evidence_ids": r.evidence_ids or [],

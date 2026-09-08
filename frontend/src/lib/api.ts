@@ -45,6 +45,12 @@ export interface CurrentUser {
   organization_id: string | null;
   organization_name?: string | null;
   is_demo_tenant?: boolean;
+  // SME repositioning: "simple" = guided SME experience, "advanced" = full
+  // enterprise experience. Both use the same backend; this only changes which
+  // screens the frontend renders. Undefined on tokens minted before this field
+  // existed - treated as "advanced" so nothing changes for existing users.
+  ui_mode?: "simple" | "advanced";
+  onboarding_completed?: boolean;
 }
 
 function getStoredUser(): CurrentUser | null {
@@ -99,6 +105,7 @@ export async function signup(payload: {
   password: string;
   full_name: string;
   organization_name: string;
+  ui_mode?: "simple" | "advanced";
 }): Promise<CurrentUser> {
   const res = await fetch(`${API_BASE}/auth/signup`, {
     method: "POST",
@@ -118,6 +125,57 @@ export async function signup(payload: {
 export function logout() {
   setToken(null);
   setStoredUser(null);
+}
+
+// --- SME experience (spec sections 4-7, 16) --------------------------------
+export async function refreshCurrentUser(): Promise<CurrentUser> {
+  const me = await request<CurrentUser>("/auth/me");
+  setStoredUser(me);
+  return me;
+}
+
+export async function setUiMode(ui_mode: "simple" | "advanced"): Promise<CurrentUser> {
+  const me = await request<CurrentUser>("/auth/me/ui-mode", {
+    method: "PATCH",
+    body: JSON.stringify({ ui_mode }),
+  });
+  setStoredUser(me);
+  return me;
+}
+
+export async function getOnboardingProfile() {
+  return request<{ exists: boolean; profile: any }>("/onboarding/profile");
+}
+
+export async function saveOnboardingProfile(profile: any) {
+  return request<{ exists: boolean; profile: any }>("/onboarding/profile", {
+    method: "PUT",
+    body: JSON.stringify(profile),
+  });
+}
+
+export async function getCompanyApplicability() {
+  return request<any>("/onboarding/applicability");
+}
+
+export async function getStarterPacks() {
+  return request<any>("/onboarding/starter-packs");
+}
+
+export async function getFrameworksCatalog() {
+  return request<any>("/onboarding/frameworks-catalog");
+}
+
+export async function getTrustScore() {
+  return request<any>("/sme/trust-score");
+}
+
+export async function getNextActions() {
+  return request<any>("/sme/next-actions");
+}
+
+export async function getSalesReadiness() {
+  return request<any>("/sme/sales-readiness");
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

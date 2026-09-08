@@ -67,6 +67,19 @@ def _eval_condition(cond: Dict[str, Any], facts: Dict[str, Any]) -> bool:
         if not isinstance(value, (list, set, tuple)):
             return False
         return len(set(value) & target) > 0
+    if op in ("gte", "lte", "gt", "lt"):
+        try:
+            left = float(value)
+            right = float(cond.get("value"))
+        except (TypeError, ValueError):
+            return False
+        if op == "gte":
+            return left >= right
+        if op == "lte":
+            return left <= right
+        if op == "gt":
+            return left > right
+        return left < right
 
     raise RuleEngineError(f"Unknown condition operator '{op}'")
 

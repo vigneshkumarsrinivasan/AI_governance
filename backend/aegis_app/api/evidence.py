@@ -20,6 +20,7 @@ from aegis_app.core.security import create_download_token, decode_download_token
 from aegis_app.models.models import Evidence, EvidenceControlMap, User, AuditEvent
 from aegis_app.schemas.schemas import EvidenceCreate, EvidenceResponse
 from aegis_app.services.crosswalk import crosswalk_service
+from aegis_app.services.findings import create_finding
 from aegis_app.services.storage import get_storage_backend, UnsupportedFileError
 from aegis_app.api.deps import get_current_user, require_evidence_write, require_evidence_review
 
@@ -285,6 +286,24 @@ async def review_evidence(
         changes={"new_status": new_status, "notes": evidence.review_notes, "reviewer": current_user.full_name},
     )
     db.add(audit)
+
+    # Rejected / insufficient evidence raises a finding against each mapped
+    # control so it lands in the remediation queue and pulls down readiness
+    # (spec §15/§23) - deliberately insufficient evidence must never read as PASS.
+    if new_status in ("Rejected", "Insufficient"):
+        maps = (await db.execute(
+            select(EvidenceControlMap.control_id).where(EvidenceControlMap.evidence_id == evidence.id)
+        )).scalars().all()
+        for cid in (maps or [None]):
+            await create_finding(
+                db, tenant_id=current_user.tenant_id,
+                organization_id=evidence.organization_id or current_user.tenant_id,
+                title=f"Evidence {new_status.lower()} for control {cid or evidence.title}",
+                description=f"'{evidence.title}' was reviewed as {new_status}. {evidence.review_notes or ''}".strip(),
+                severity="Medium", source="Missing Evidence", control_id=cid,
+                actor_id=current_user.id, actor_email=current_user.email,
+            )
+
     await db.commit()
 
     return {"id": evidence.id, "approval_status": evidence.approval_status, "reviewed_by": evidence.reviewed_by}

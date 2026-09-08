@@ -343,8 +343,37 @@ class FindingResponse(BaseModel):
     system_id: Optional[str] = None
     system_name: Optional[str] = None
     control_id: Optional[str] = None
+    risk_id: Optional[str] = None
     due_date: Optional[datetime] = None
     created_at: datetime
+
+
+class FindingCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    severity: str = "High"          # Critical, High, Medium, Low
+    source: str = "Manual Review"   # Assessment, Failed Control, Missing Evidence, Red Team, Vendor Assessment, Runtime Violation, Regulatory Change, Manual Review
+    system_id: Optional[str] = None
+    control_id: Optional[str] = None
+    risk_id: Optional[str] = None
+    due_date: Optional[datetime] = None
+
+
+class FindingUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    severity: Optional[str] = None
+    status: Optional[str] = None     # Open, Remediating, Resolved, Accepted Risk
+    due_date: Optional[datetime] = None
+
+
+class RemediationCreate(BaseModel):
+    finding_id: str
+    title: str
+    description: Optional[str] = None
+    assigned_to: str = "AI Engineer"
+    priority: str = "High"          # Critical, High, Medium, Low
+    target_date: Optional[datetime] = None
 
 # ---------------------------------------------------------
 # AI Governance Copilot Schemas

@@ -335,8 +335,25 @@ export async function getFindings() {
   return request<any[]>("/findings");
 }
 
+export async function createFinding(payload: {
+  title: string; severity?: string; source?: string;
+  description?: string; system_id?: string | null; control_id?: string | null; due_date?: string | null;
+}) {
+  return request<any>("/findings", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export async function updateFinding(findingId: string, payload: Record<string, any>) {
+  return request<any>(`/findings/${findingId}`, { method: "PUT", body: JSON.stringify(payload) });
+}
+
 export async function getRemediations() {
   return request<any[]>("/remediations");
+}
+
+export async function createRemediation(payload: {
+  finding_id: string; title: string; description?: string; assigned_to?: string; priority?: string; target_date?: string | null;
+}) {
+  return request<any>("/remediations", { method: "POST", body: JSON.stringify(payload) });
 }
 
 export async function updateRemediation(taskId: string, status: string) {
@@ -344,6 +361,10 @@ export async function updateRemediation(taskId: string, status: string) {
     method: "PUT",
     body: JSON.stringify({ status })
   });
+}
+
+export async function createRisk(payload: Record<string, any>) {
+  return request<any>("/risks", { method: "POST", body: JSON.stringify(payload) });
 }
 
 export async function acceptRisk(riskId: string, businessJustification: string, expiryDate?: string) {

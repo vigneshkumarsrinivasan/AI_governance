@@ -11,8 +11,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from aegis_app.core.database import get_db
 from aegis_app.models.models import Risk, Finding, RemediationTask, User, AuditEvent, AISystem
-from aegis_app.schemas.schemas import RiskCreate, RiskResponse, FindingResponse
+from aegis_app.schemas.schemas import (
+    RiskCreate, RiskResponse, FindingResponse, FindingCreate, FindingUpdate, RemediationCreate,
+)
 from aegis_app.api.deps import get_current_user, require_governance_write, require_risk_acceptance
+from aegis_app.core import permissions as _perm
+from aegis_app.api.deps import require_roles
+from aegis_app.services.findings import create_finding as _create_finding
+
+# Findings can be raised by governance, security, risk and audit roles.
+require_finding_write = require_roles(sorted(set(_perm.GOVERNANCE_WRITE) | {"Auditor", "Legal Reviewer"}))
 
 router = APIRouter(prefix="", tags=["Risk & Remediation"])
 
@@ -123,6 +131,108 @@ async def list_findings(
         )
     return response
 
+@router.post("/findings", response_model=FindingResponse, status_code=201)
+async def create_finding_endpoint(
+    payload: FindingCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_finding_write),
+):
+    """Raise a finding manually (spec §23/§35). Findings are also raised
+    automatically by failed control tests and rejected evidence."""
+    if payload.system_id:
+        owns = (await db.execute(select(AISystem.id).where(
+            AISystem.id == payload.system_id, AISystem.tenant_id == current_user.tenant_id
+        ))).first()
+        if not owns:
+            raise HTTPException(status_code=404, detail="system_id not found in your tenant")
+
+    finding = await _create_finding(
+        db, tenant_id=current_user.tenant_id,
+        organization_id=current_user.organization_id or current_user.tenant_id,
+        title=payload.title, description=payload.description or "", severity=payload.severity,
+        source=payload.source, system_id=payload.system_id, control_id=payload.control_id,
+        risk_id=payload.risk_id, due_date=payload.due_date,
+        actor_id=current_user.id, actor_email=current_user.email, dedupe=False,
+    )
+    await db.commit()
+    await db.refresh(finding)
+    return FindingResponse(
+        id=finding.id, title=finding.title, description=finding.description, severity=finding.severity,
+        source=finding.source, status=finding.status, system_id=finding.system_id,
+        system_name=None, control_id=finding.control_id, risk_id=finding.risk_id,
+        due_date=finding.due_date, created_at=finding.created_at,
+    )
+
+
+@router.put("/findings/{finding_id}", response_model=FindingResponse)
+async def update_finding(
+    finding_id: str,
+    payload: FindingUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_finding_write),
+):
+    """Update / progress / close a finding. Closed findings stay in the audit
+    trail (status changes to Resolved, the row is never deleted)."""
+    finding = (await db.execute(select(Finding).where(
+        Finding.id == finding_id, Finding.tenant_id == current_user.tenant_id
+    ))).scalars().first()
+    if not finding:
+        raise HTTPException(status_code=404, detail="Finding not found")
+
+    before = {"status": finding.status, "severity": finding.severity}
+    for field in ("title", "description", "severity", "status", "due_date"):
+        val = getattr(payload, field)
+        if val is not None:
+            setattr(finding, field, val)
+
+    db.add(AuditEvent(
+        tenant_id=current_user.tenant_id, actor_id=current_user.id, actor_email=current_user.email,
+        action="UPDATE_FINDING", object_type="Finding", object_id=finding.id,
+        changes={"before": before, "after": {"status": finding.status, "severity": finding.severity}},
+    ))
+    await db.commit()
+    await db.refresh(finding)
+    return FindingResponse(
+        id=finding.id, title=finding.title, description=finding.description, severity=finding.severity,
+        source=finding.source, status=finding.status, system_id=finding.system_id, system_name=None,
+        control_id=finding.control_id, risk_id=finding.risk_id, due_date=finding.due_date, created_at=finding.created_at,
+    )
+
+
+@router.post("/remediations", response_model=Dict[str, Any], status_code=201)
+async def create_remediation(
+    payload: RemediationCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_governance_write),
+):
+    """Create a remediation task against a finding (spec §24). Works with the
+    internal workflow whether or not Jira is configured."""
+    finding = (await db.execute(select(Finding).where(
+        Finding.id == payload.finding_id, Finding.tenant_id == current_user.tenant_id
+    ))).scalars().first()
+    if not finding:
+        raise HTTPException(status_code=404, detail="finding_id not found in your tenant")
+
+    task = RemediationTask(
+        tenant_id=current_user.tenant_id, finding_id=finding.id,
+        title=payload.title, description=payload.description,
+        assigned_to=payload.assigned_to, priority=payload.priority,
+        status="Todo", target_date=payload.target_date,
+    )
+    db.add(task)
+    if finding.status == "Open":
+        finding.status = "Remediating"
+    db.add(AuditEvent(
+        tenant_id=current_user.tenant_id, actor_id=current_user.id, actor_email=current_user.email,
+        action="CREATE_REMEDIATION", object_type="RemediationTask", object_id=finding.id,
+        changes={"finding_id": finding.id, "assigned_to": payload.assigned_to, "priority": payload.priority},
+    ))
+    await db.commit()
+    await db.refresh(task)
+    return {"id": task.id, "finding_id": task.finding_id, "status": task.status,
+            "assigned_to": task.assigned_to, "priority": task.priority}
+
+
 @router.get("/remediations", response_model=List[Dict[str, Any]])
 async def list_remediations(
     db: AsyncSession = Depends(get_db),
@@ -169,6 +279,26 @@ async def update_remediation(
 
     if "status" in status_update:
         task.status = status_update["status"]
+        if task.status in ("Done", "In Review"):
+            from datetime import datetime, timezone
+            task.completed_date = datetime.now(timezone.utc)
+        # When every remediation task on a finding is Done, resolve the finding
+        # (it stays in the audit trail - status change only, never deleted).
+        if task.status == "Done":
+            finding = (await db.execute(
+                select(Finding).where(Finding.id == task.finding_id)
+            )).scalars().first()
+            if finding:
+                siblings = (await db.execute(
+                    select(RemediationTask).where(RemediationTask.finding_id == finding.id)
+                )).scalars().all()
+                if all(s.status == "Done" for s in siblings) and finding.status not in ("Resolved", "Accepted Risk"):
+                    finding.status = "Resolved"
+                    db.add(AuditEvent(
+                        tenant_id=current_user.tenant_id, actor_id=current_user.id, actor_email=current_user.email,
+                        action="RESOLVE_FINDING", object_type="Finding", object_id=finding.id,
+                        changes={"reason": "all remediation tasks completed"},
+                    ))
 
     await db.commit()
     return {"id": task.id, "status": task.status}

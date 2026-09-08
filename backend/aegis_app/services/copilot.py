@@ -149,10 +149,13 @@ class CopilotService:
                 "reference": "DORA Article 28 & NIST SP 800-161 SR-3"
             })
 
-        # Default query handler
+        # Default query handler. Do NOT echo the raw user query back into the
+        # answer - a rules-based copilot has no reason to, and not reflecting
+        # untrusted input keeps the response clean of any injected markup.
         else:
             answer = (
-                f"Regarding your query on '{query}':\n\n"
+                "I can answer questions grounded in your tenant's data (registered AI systems, "
+                "controls, evidence, findings, vendors, agents) and the framework library. "
                 "AegisAI's Unified Control Framework links your registered AI systems against 17 authoritative standards. "
                 "You can navigate to the **Unified Controls** and **Crosswalk Matrix** modules to inspect specific requirements, "
                 "view attached evidence artifacts, and check your real-time implementation score."

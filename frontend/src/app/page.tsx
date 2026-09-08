@@ -15,6 +15,9 @@ export default function AegisPlatform() {
   const [currentUser, setCurrentUser] = useState<api.CurrentUser | null>(null);
 
   const [activeTab, setActiveTab] = useState<string>("dashboard");
+  // Set by drill-through from a dashboard stat card so the AI Systems Inventory
+  // opens pre-filtered to the exact records the number represented.
+  const [inventoryFilter, setInventoryFilter] = useState<"all" | "high-risk" | "genai" | "agentic">("all");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +51,55 @@ export default function AegisPlatform() {
   const [newVendorForm, setNewVendorForm] = useState({ name: "", service_type: "Foundation Model Provider", risk_rating: "Low", data_processing_role: "Processor" });
   const [registryModalOpen, setRegistryModalOpen] = useState<"model" | "agent" | "vendor" | null>(null);
 
+  // Findings / remediation quick-add (advanced view, Risk Register tab)
+  const [newFindingOpen, setNewFindingOpen] = useState(false);
+  const [newFindingForm, setNewFindingForm] = useState({ title: "", severity: "High", source: "Manual Review", description: "", control_id: "", system_id: "" });
+  const [findingBusy, setFindingBusy] = useState(false);
+
+  const submitNewFinding = async () => {
+    if (!newFindingForm.title.trim()) return;
+    setFindingBusy(true);
+    try {
+      await api.createFinding({
+        title: newFindingForm.title.trim(),
+        severity: newFindingForm.severity,
+        source: newFindingForm.source,
+        description: newFindingForm.description || undefined,
+        control_id: newFindingForm.control_id || undefined,
+        system_id: newFindingForm.system_id || undefined,
+      });
+      setNewFindingForm({ title: "", severity: "High", source: "Manual Review", description: "", control_id: "", system_id: "" });
+      setNewFindingOpen(false);
+      await loadPlatformData();
+    } catch (e: any) {
+      alert("Could not create finding: " + (e?.message || e));
+    } finally {
+      setFindingBusy(false);
+    }
+  };
+
+  const addRemediationForFinding = async (findingId: string, findingTitle: string) => {
+    const title = window.prompt(`Remediation task for "${findingTitle}":`, `Remediate: ${findingTitle}`);
+    if (!title) return;
+    const assignee = window.prompt("Assign to (name / role):", "AI Engineer") || "AI Engineer";
+    try {
+      await api.createRemediation({ finding_id: findingId, title, assigned_to: assignee, priority: "High" });
+      await loadPlatformData();
+    } catch (e: any) {
+      alert("Could not create remediation: " + (e?.message || e));
+    }
+  };
+
+  const closeFinding = async (findingId: string) => {
+    if (!window.confirm("Mark this finding Resolved? It stays in the audit trail.")) return;
+    try {
+      await api.updateFinding(findingId, { status: "Resolved" });
+      await loadPlatformData();
+    } catch (e: any) {
+      alert("Could not update finding: " + (e?.message || e));
+    }
+  };
+
   // Knowledge Graph query panel (Phase 2)
   const [graphRequirementId, setGraphRequirementId] = useState("EU-AIA-ART-09");
   const [graphRequirementResult, setGraphRequirementResult] = useState<any>(null);
@@ -73,6 +125,102 @@ export default function AegisPlatform() {
   const [selectedSystem, setSelectedSystem] = useState<any>(null);
   const [selectedControl, setSelectedControl] = useState<any>(null);
   const [evidenceModalOpen, setEvidenceModalOpen] = useState<boolean>(false);
+
+  // ---- Cross-linking / deep navigation --------------------------------
+  // Any reference to a control, framework requirement, AI system, model,
+  // vendor or agent anywhere in the UI can be made clickable and route to the
+  // page that owns that record (optionally opening its detail / scrolling to
+  // it). `openFramework` + `frameworkHighlight` drive the Frameworks tab's
+  // requirement browser.
+  const [openFramework, setOpenFramework] = useState<string | null>(null);
+  const [frameworkDetail, setFrameworkDetail] = useState<any>(null);
+  const [frameworkDetailLoading, setFrameworkDetailLoading] = useState(false);
+  const [frameworkHighlight, setFrameworkHighlight] = useState<string | null>(null);
+  const [vendorFocusId, setVendorFocusId] = useState<string | null>(null);
+  const [modelFocusId, setModelFocusId] = useState<string | null>(null);
+  const [agentFocusId, setAgentFocusId] = useState<string | null>(null);
+
+  const [pendingControlCode, setPendingControlCode] = useState<string | null>(null);
+  const goToControl = (code: string) => {
+    if (!code) return;
+    setControlDomainFilter("All");
+    setActiveTab("controls");
+    setPendingControlCode(code);
+  };
+  useEffect(() => {
+    if (!pendingControlCode) return;
+    const ctrl = controls.find((c: any) => c.code === pendingControlCode || c.id === pendingControlCode);
+    if (ctrl) { setSelectedControl(ctrl); setPendingControlCode(null); }
+    else if (controls.length > 0) { setPendingControlCode(null); }  // not found; give up quietly
+  }, [pendingControlCode, controls]);
+
+  const goToFrameworkRequirement = (frameworkId: string, ref?: string) => {
+    if (!frameworkId) return;
+    setActiveTab("frameworks");
+    setOpenFramework(frameworkId);
+    setFrameworkHighlight(ref || null);
+  };
+
+  const [pendingSystemId, setPendingSystemId] = useState<string | null>(null);
+  const goToSystem = (systemId: string) => {
+    if (!systemId) return;
+    setInventoryFilter("all");
+    setActiveTab("inventory");
+    setPendingSystemId(systemId);
+  };
+  useEffect(() => {
+    if (!pendingSystemId) return;
+    const sys = aiSystems.find((s: any) => s.id === pendingSystemId);
+    if (sys) { setSelectedSystem(sys); setPendingSystemId(null); }
+    else if (aiSystems.length > 0) { setPendingSystemId(null); }
+  }, [pendingSystemId, aiSystems]);
+
+  const goToVendor = (vendorId: string) => { if (!vendorId) return; setVendorFocusId(vendorId); setActiveTab("vendor-registry"); };
+  const goToModel = (modelId: string) => { if (!modelId) return; setModelFocusId(modelId); setActiveTab("model-registry"); };
+  const goToAgent = (agentId: string) => { if (!agentId) return; setAgentFocusId(agentId); setActiveTab("agent-registry"); };
+
+  // Load a framework's requirement tree when one is opened in the Frameworks tab.
+  useEffect(() => {
+    if (!openFramework) { setFrameworkDetail(null); return; }
+    let cancelled = false;
+    setFrameworkDetailLoading(true);
+    api.getFrameworkDetail(openFramework)
+      .then(d => { if (!cancelled) setFrameworkDetail(d); })
+      .catch(() => { if (!cancelled) setFrameworkDetail(null); })
+      .finally(() => { if (!cancelled) setFrameworkDetailLoading(false); });
+    return () => { cancelled = true; };
+  }, [openFramework]);
+
+  // Once a framework detail is loaded and a highlight ref is set, scroll to it.
+  useEffect(() => {
+    if (!frameworkDetail || !frameworkHighlight) return;
+    const t = setTimeout(() => {
+      const el = document.getElementById(`req-${frameworkHighlight}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-sky-400");
+        setTimeout(() => el.classList.remove("ring-2", "ring-sky-400"), 2600);
+      }
+    }, 120);
+    return () => clearTimeout(t);
+  }, [frameworkDetail, frameworkHighlight]);
+
+  // Scroll to and briefly highlight a model / vendor / agent when arriving from a cross-link.
+  useEffect(() => {
+    const map: [string, string | null, () => void][] = [
+      ["model", modelFocusId, () => setModelFocusId(null)],
+      ["vendor", vendorFocusId, () => setVendorFocusId(null)],
+      ["agent", agentFocusId, () => setAgentFocusId(null)],
+    ];
+    const active = map.find(([, id]) => id);
+    if (!active) return;
+    const [prefix, id, clear] = active;
+    const t = setTimeout(() => {
+      document.getElementById(`${prefix}-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 250);
+    const c = setTimeout(clear, 3000);
+    return () => { clearTimeout(t); clearTimeout(c); };
+  }, [modelFocusId, vendorFocusId, agentFocusId]);
 
   // Intake Wizard State
   const [intakeStep, setIntakeStep] = useState<number>(1);
@@ -689,39 +837,50 @@ export default function AegisPlatform() {
                         </p>
                       </div>
 
-                      {/* Multi-Dimensional Readiness Score Card */}
-                      <div className="flex items-center gap-4 bg-black/40 p-3 rounded-xl border border-white/10 backdrop-blur-md">
-                        <div className="text-center px-3 border-r border-white/10">
+                      {/* Multi-Dimensional Readiness Score Card - each dimension links to where it is managed.
+                          Readiness = 40% implementation + 35% evidence + 25% effectiveness, minus open-finding deductions. */}
+                      <div className="flex items-center gap-4 bg-black/40 p-3 rounded-xl border border-white/10 backdrop-blur-md"
+                        title="Overall readiness = 40% implementation + 35% evidence + 25% effectiveness, minus open-finding deductions (max 30). Click a dimension to manage it.">
+                        <button onClick={() => setActiveTab("controls")} className="text-center px-3 border-r border-white/10 hover:bg-white/5 rounded transition-colors">
                           <div className="text-lg font-extrabold text-emerald-400">{metrics.implementation_score}%</div>
                           <div className="text-[10px] text-slate-400">Implemented</div>
-                        </div>
-                        <div className="text-center px-3 border-r border-white/10">
+                        </button>
+                        <button onClick={() => setActiveTab("evidence")} className="text-center px-3 border-r border-white/10 hover:bg-white/5 rounded transition-colors">
                           <div className="text-lg font-extrabold text-sky-400">{metrics.evidence_completeness_score}%</div>
                           <div className="text-[10px] text-slate-400">Evidence</div>
-                        </div>
-                        <div className="text-center px-3">
+                        </button>
+                        <button onClick={() => setActiveTab("controls")} className="text-center px-3 hover:bg-white/5 rounded transition-colors">
                           <div className="text-lg font-extrabold text-indigo-400">{metrics.control_effectiveness_score}%</div>
                           <div className="text-[10px] text-slate-400">Effective</div>
-                        </div>
+                        </button>
                       </div>
                     </div>
                   </div>
 
-                  {/* 6 Key Stat Cards */}
+                  {/* 6 Key Stat Cards - each drills through to the page that holds those records */}
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     {[
-                      { label: "Total AI Systems", val: metrics.total_ai_systems, desc: "Active in Inventory", color: "text-white" },
-                      { label: "High-Risk (Annex III)", val: metrics.high_risk_systems_count, desc: "Mandatory EU Oversight", color: "text-rose-400" },
-                      { label: "Generative AI", val: metrics.genai_systems_count, desc: "LLM / RAG Pipelines", color: "text-purple-400" },
-                      { label: "Agentic AI", val: metrics.agentic_systems_count, desc: "Tool & Code Execution", color: "text-amber-400" },
-                      { label: "Active Evidence", val: metrics.active_evidence_artifacts_count, desc: "Cryptographic Vault", color: "text-emerald-400" },
-                      { label: "Open Findings", val: metrics.open_findings_count, desc: `${metrics.critical_findings_count} Critical SLA`, color: "text-amber-300" }
+                      { label: "Total AI Systems", val: metrics.total_ai_systems, desc: "Active in Inventory", color: "text-white", target: "inventory" },
+                      { label: "High-Risk (Annex III)", val: metrics.high_risk_systems_count, desc: "Mandatory EU Oversight", color: "text-rose-400", target: "inventory", filter: "high-risk" },
+                      { label: "Generative AI", val: metrics.genai_systems_count, desc: "LLM / RAG Pipelines", color: "text-purple-400", target: "inventory", filter: "genai" },
+                      { label: "Agentic AI", val: metrics.agentic_systems_count, desc: "Tool & Code Execution", color: "text-amber-400", target: "agent-registry" },
+                      { label: "Active Evidence", val: metrics.active_evidence_artifacts_count, desc: "Cryptographic Vault", color: "text-emerald-400", target: "evidence" },
+                      { label: "Open Findings", val: metrics.open_findings_count, desc: `${metrics.critical_findings_count} Critical SLA`, color: "text-amber-300", target: "risks" }
                     ].map((stat, i) => (
-                      <div key={i} className="p-4 rounded-xl glass-panel glass-panel-hover">
-                        <div className="text-xs text-slate-400">{stat.label}</div>
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setInventoryFilter((stat.filter as "all" | "high-risk" | "genai" | "agentic") || "all"); setActiveTab(stat.target); }}
+                        title={`View ${stat.label} in ${stat.target === "inventory" ? "AI Systems Inventory" : stat.target === "agent-registry" ? "Agents" : stat.target === "evidence" ? "Evidence Vault" : "Risk Register"}`}
+                        className="p-4 rounded-xl glass-panel glass-panel-hover text-left hover:border-sky-500/40 transition-colors group"
+                      >
+                        <div className="text-xs text-slate-400 flex items-center justify-between">
+                          {stat.label}
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-sky-400 transition-colors" />
+                        </div>
                         <div className={`text-2xl font-bold mt-1 ${stat.color}`}>{stat.val}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5">{stat.desc}</div>
-                      </div>
+                      </button>
                     ))}
                   </div>
 
@@ -741,9 +900,10 @@ export default function AegisPlatform() {
                           <div className="text-xs text-slate-500 italic">No frameworks recommended yet. Run intake classification on an AI system to begin.</div>
                         )}
                         {Object.entries(metrics.framework_readiness || {}).map(([fwName, pct]: any) => (
-                          <div key={fwName} className="space-y-1">
+                          <button key={fwName} type="button" onClick={() => setActiveTab("frameworks")}
+                            className="w-full space-y-1 text-left group" title={`Open ${fwName} in Authoritative Frameworks`}>
                             <div className="flex items-center justify-between text-xs">
-                              <span className="font-medium text-slate-300">{fwName}</span>
+                              <span className="font-medium text-slate-300 group-hover:text-sky-300 transition-colors">{fwName}</span>
                               <span className="font-bold text-sky-400">{pct}%</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
@@ -752,18 +912,19 @@ export default function AegisPlatform() {
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                          </div>
+                          </button>
                         ))}
                         {(metrics.unassessed_frameworks || []).map((fwName: string) => (
-                          <div key={fwName} className="space-y-1 opacity-60">
+                          <button key={fwName} type="button" onClick={() => setActiveTab("frameworks")}
+                            className="w-full space-y-1 text-left opacity-60 hover:opacity-100 transition-opacity group" title={`Open ${fwName} in Authoritative Frameworks`}>
                             <div className="flex items-center justify-between text-xs">
-                              <span className="font-medium text-slate-400">{fwName}</span>
+                              <span className="font-medium text-slate-400 group-hover:text-sky-300 transition-colors">{fwName}</span>
                               <span className="font-semibold text-slate-500">Not Assessed</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-slate-800/60 overflow-hidden">
                               <div className="h-full rounded-full bg-slate-700 border border-dashed border-slate-600" style={{ width: "100%" }} />
                             </div>
-                          </div>
+                          </button>
                         ))}
                       </div>
                       <div className="text-[10px] text-slate-500 pt-1">
@@ -780,11 +941,15 @@ export default function AegisPlatform() {
                         </h2>
                         <div className="grid grid-cols-3 gap-3 pt-2">
                           {Object.entries(metrics.risk_category_distribution || {}).map(([cat, count]: any) => (
-                            <div key={cat} className="p-3 rounded-lg bg-black/30 border border-white/5 text-center">
+                            <button key={cat} type="button" onClick={() => setActiveTab("risks")}
+                              className="p-3 rounded-lg bg-black/30 border border-white/5 text-center hover:border-amber-500/40 transition-colors" title={`View ${cat} risks in the Risk Register`}>
                               <div className="text-lg font-bold text-slate-200">{count}</div>
                               <div className="text-[11px] text-slate-400 capitalize">{cat}</div>
-                            </div>
+                            </button>
                           ))}
+                          {Object.keys(metrics.risk_category_distribution || {}).length === 0 && (
+                            <div className="col-span-3 text-[11px] text-slate-500 text-center py-2">No risks recorded yet.</div>
+                          )}
                         </div>
                       </div>
 
@@ -839,6 +1004,37 @@ export default function AegisPlatform() {
                     </button>
                   </div>
 
+                  {/* Filter chips (set when arriving from a dashboard stat card) */}
+                  <div className="flex items-center gap-2 flex-wrap text-[11px]">
+                    {([
+                      ["all", "All systems"],
+                      ["high-risk", "High-Risk (Annex III)"],
+                      ["genai", "Generative AI"],
+                      ["agentic", "Agentic AI"],
+                    ] as [typeof inventoryFilter, string][]).map(([key, label]) => (
+                      <button
+                        key={key}
+                        onClick={() => setInventoryFilter(key)}
+                        className={`px-2.5 py-1 rounded-full border transition-colors ${
+                          inventoryFilter === key
+                            ? "bg-sky-500/15 border-sky-500/40 text-sky-200"
+                            : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20"
+                        }`}
+                      >
+                        {label}
+                        {key !== "all" && (
+                          <span className="ml-1.5 text-slate-500">
+                            {aiSystems.filter((s: any) =>
+                              key === "high-risk" ? String(s.risk_classification || "").includes("High")
+                              : key === "genai" ? s.is_generative_ai
+                              : key === "agentic" ? s.is_agentic_ai : true
+                            ).length}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
                   {/* Systems Table */}
                   <div className="rounded-xl glass-panel overflow-hidden">
                     <table className="w-full text-left text-xs">
@@ -854,7 +1050,14 @@ export default function AegisPlatform() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
-                        {aiSystems.map(sys => (
+                        {aiSystems
+                          .filter((sys: any) =>
+                            inventoryFilter === "high-risk" ? String(sys.risk_classification || "").includes("High")
+                            : inventoryFilter === "genai" ? sys.is_generative_ai
+                            : inventoryFilter === "agentic" ? sys.is_agentic_ai
+                            : true
+                          )
+                          .map(sys => (
                           <tr key={sys.id} className="hover:bg-white/[0.02] transition-colors">
                             <td className="p-3.5">
                               <div className="font-semibold text-slate-100">{sys.name}</div>
@@ -894,6 +1097,19 @@ export default function AegisPlatform() {
                             </td>
                           </tr>
                         ))}
+                        {aiSystems.length === 0 && (
+                          <tr><td colSpan={7} className="p-6 text-center text-xs text-slate-500">
+                            No AI systems registered yet. <button onClick={() => setActiveTab("intake")} className="text-sky-400 hover:underline">Start an intake</button> to register your first system.
+                          </td></tr>
+                        )}
+                        {aiSystems.length > 0 && aiSystems.filter((sys: any) =>
+                            inventoryFilter === "high-risk" ? String(sys.risk_classification || "").includes("High")
+                            : inventoryFilter === "genai" ? sys.is_generative_ai
+                            : inventoryFilter === "agentic" ? sys.is_agentic_ai : true).length === 0 && (
+                          <tr><td colSpan={7} className="p-6 text-center text-xs text-slate-500">
+                            No systems match this filter. <button onClick={() => setInventoryFilter("all")} className="text-sky-400 hover:underline">Show all</button>
+                          </td></tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -1272,7 +1488,8 @@ export default function AegisPlatform() {
                           .map(ctrl => (
                             <tr key={ctrl.id} className="hover:bg-white/[0.02] transition-colors">
                               <td className="p-3.5">
-                                <div className="font-mono text-sky-400 text-[11px]">{ctrl.code}</div>
+                                <button onClick={() => setSelectedControl(ctrl)}
+                                  className="font-mono text-sky-400 text-[11px] hover:text-sky-300 hover:underline">{ctrl.code}</button>
                                 <div className="font-semibold text-slate-100">{ctrl.title}</div>
                               </td>
                               <td className="p-3.5 text-slate-300">{ctrl.domain}</td>
@@ -1337,7 +1554,10 @@ export default function AegisPlatform() {
                         {crosswalk.map(row => (
                           <tr key={row.control_id} className="hover:bg-white/[0.02]">
                             <td className="p-3.5 align-top">
-                              <div className="font-mono text-sky-400 text-[11px] font-bold">{row.control_code}</div>
+                              <button onClick={() => goToControl(row.control_code)}
+                                className="font-mono text-sky-400 text-[11px] font-bold hover:text-sky-300 hover:underline">
+                                {row.control_code} ↗
+                              </button>
                               <div className="font-semibold text-slate-100">{row.control_title}</div>
                               <div className="text-[10px] text-slate-400 mt-0.5">{row.domain}</div>
                             </td>
@@ -1345,9 +1565,13 @@ export default function AegisPlatform() {
                               {row.mappings.map((m: any, idx: number) => (
                                 <div key={idx} className="flex items-center gap-2 text-[11px]">
                                   <span className="font-semibold text-slate-200">{m.framework_name}:</span>
-                                  <span className="font-mono text-sky-300 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">
-                                    {m.article || m.requirement_id}
-                                  </span>
+                                  <button
+                                    onClick={() => goToFrameworkRequirement(m.framework_id, m.requirement_id || m.article)}
+                                    title={`Open ${m.framework_name} ${m.article || m.requirement_id}${m.requirement_title ? " — " + m.requirement_title : ""}`}
+                                    className="font-mono text-sky-300 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20 hover:border-sky-400 hover:text-sky-200 transition-colors"
+                                  >
+                                    {m.article || m.requirement_id} ↗
+                                  </button>
                                   <span className={`text-[9px] px-1 rounded font-semibold ${
                                     m.confidence === "Exact" ? "text-emerald-400 bg-emerald-500/10" : "text-indigo-300 bg-indigo-500/10"
                                   }`}>
@@ -1384,7 +1608,14 @@ export default function AegisPlatform() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {frameworks.map(fw => (
-                      <div key={fw.id} className="p-4 rounded-xl glass-panel glass-panel-hover flex flex-col justify-between">
+                      <button
+                        key={fw.id}
+                        type="button"
+                        onClick={() => { setOpenFramework(fw.id); setFrameworkHighlight(null); }}
+                        className={`p-4 rounded-xl glass-panel glass-panel-hover flex flex-col justify-between text-left transition-colors ${
+                          openFramework === fw.id ? "border-sky-500/50 ring-1 ring-sky-500/40" : "hover:border-sky-500/30"
+                        }`}
+                      >
                         <div>
                           <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
                             <span className="font-semibold text-sky-400">{fw.jurisdiction}</span>
@@ -1397,21 +1628,92 @@ export default function AegisPlatform() {
 
                         <div className="pt-4 mt-3 border-t border-white/5 flex items-center justify-between">
                           <div className="text-[11px] text-emerald-400 font-medium">
-                            {fw.requirement_count} Normalized Requirements
+                            {fw.requirement_count} Requirements
                           </div>
-                          <a
-                            href={fw.official_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-sky-400 hover:text-sky-300 flex items-center gap-1"
-                          >
-                            <span>Official Source</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
+                          <span className="text-xs text-sky-400 flex items-center gap-1">
+                            {openFramework === fw.id ? "Viewing" : "Browse requirements"} <ChevronRight className="w-3 h-3" />
+                          </span>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
+
+                  {/* Framework requirement browser (opens on card click; also the
+                      target of "EU AI Act: Article 9" style links from Crosswalk,
+                      Controls, Evidence, Findings). */}
+                  {openFramework && (
+                    <div id="framework-detail" className="rounded-xl glass-panel p-5 space-y-4 border border-sky-500/20">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h2 className="text-sm font-bold text-white">
+                            {frameworkDetail?.name || frameworks.find((f: any) => f.id === openFramework)?.name || openFramework}
+                          </h2>
+                          {frameworkDetail && (
+                            <div className="text-[11px] text-slate-400 mt-0.5 font-mono">
+                              {frameworkDetail.official_reference} · {frameworkDetail.jurisdiction} · v{frameworkDetail.version}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {(frameworkDetail?.official_url || frameworks.find((f: any) => f.id === openFramework)?.official_url) && (
+                            <a href={frameworkDetail?.official_url || frameworks.find((f: any) => f.id === openFramework)?.official_url}
+                              target="_blank" rel="noopener noreferrer"
+                              className="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
+                              Official source <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                          <button onClick={() => { setOpenFramework(null); setFrameworkHighlight(null); }}
+                            className="text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>
+                        </div>
+                      </div>
+
+                      {frameworkDetailLoading && <div className="text-xs text-slate-500 flex items-center gap-2"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Loading requirements…</div>}
+
+                      {!frameworkDetailLoading && !frameworkDetail && (
+                        <div className="text-xs text-slate-500">A structured requirement view is not available for this framework yet. Use the official source link above.</div>
+                      )}
+
+                      {frameworkDetail?.chapters?.map((ch: any) => (
+                        <div key={ch.chapter_id} className="space-y-2">
+                          <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wide border-b border-white/5 pb-1">
+                            {ch.chapter_id}{ch.title ? ` — ${ch.title}` : ""}
+                          </div>
+                          {(ch.requirements || []).map((r: any) => {
+                            const systemsFor = aiSystems.filter((s: any) => (s.applicable_frameworks || []).includes(openFramework));
+                            return (
+                              <div key={r.id} id={`req-${r.id}`}
+                                className="rounded-lg bg-black/30 border border-white/5 p-3 space-y-1.5 scroll-mt-24 transition-all">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono text-[11px] text-sky-300 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">{r.article || r.id}</span>
+                                  <span className="text-xs font-semibold text-slate-100">{r.title}</span>
+                                </div>
+                                {r.normalized_requirement && (
+                                  <p className="text-[11px] text-slate-400 leading-relaxed">{r.normalized_requirement}</p>
+                                )}
+                                <div className="flex items-center gap-3 flex-wrap pt-1 text-[10px]">
+                                  {/* controls that map to this requirement */}
+                                  {crosswalk
+                                    .filter((cw: any) => (cw.mappings || []).some((m: any) => m.requirement_id === r.id || m.article === r.article))
+                                    .map((cw: any) => (
+                                      <button key={cw.control_id} onClick={() => goToControl(cw.control_code)}
+                                        className="font-mono text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20 hover:border-indigo-400">
+                                        {cw.control_code} ↗
+                                      </button>
+                                    ))}
+                                  {systemsFor.length > 0 && (
+                                    <button onClick={() => { setInventoryFilter("all"); setActiveTab("inventory"); }}
+                                      className="text-slate-400 hover:text-sky-300">
+                                      {systemsFor.length} affected system{systemsFor.length === 1 ? "" : "s"} ↗
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1462,9 +1764,10 @@ export default function AegisPlatform() {
                             <td className="p-3.5">
                               <div className="flex flex-wrap gap-1">
                                 {ev.satisfied_controls.map((cid: string) => (
-                                  <span key={cid} className="text-[10px] font-mono bg-indigo-500/15 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/20">
-                                    {cid}
-                                  </span>
+                                  <button key={cid} onClick={() => goToControl(cid)}
+                                    className="text-[10px] font-mono bg-indigo-500/15 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/20 hover:border-indigo-400 transition-colors">
+                                    {cid} ↗
+                                  </button>
                                 ))}
                               </div>
                             </td>
@@ -1627,7 +1930,7 @@ export default function AegisPlatform() {
                             <tr><td colSpan={7} className="p-6 text-center text-slate-500 italic">No models registered yet.</td></tr>
                           )}
                           {registryModels.map((m: any) => (
-                            <tr key={m.id}>
+                            <tr key={m.id} id={`model-${m.id}`} className={`scroll-mt-24 transition-all ${modelFocusId === m.id ? "ring-2 ring-sky-400 bg-sky-500/5" : ""}`}>
                               <td className="p-3 font-semibold text-slate-200">{m.name}</td>
                               <td className="p-3 text-slate-300">{m.provider}</td>
                               <td className="p-3 text-slate-400">{m.version}</td>
@@ -1737,7 +2040,7 @@ export default function AegisPlatform() {
                             <tr><td colSpan={5} className="p-6 text-center text-slate-500 italic">No agents registered yet.</td></tr>
                           )}
                           {registryAgents.map((a: any) => (
-                            <tr key={a.id}>
+                            <tr key={a.id} id={`agent-${a.id}`} className={`scroll-mt-24 transition-all ${agentFocusId === a.id ? "ring-2 ring-sky-400 bg-sky-500/5" : ""}`}>
                               <td className="p-3 font-semibold text-slate-200">{a.name}</td>
                               <td className="p-3 text-slate-400">{a.autonomy_level}</td>
                               <td className="p-3">
@@ -1805,7 +2108,7 @@ export default function AegisPlatform() {
                             <tr><td colSpan={5} className="p-6 text-center text-slate-500 italic">No vendors registered yet.</td></tr>
                           )}
                           {registryVendors.map((v: any) => (
-                            <tr key={v.id}>
+                            <tr key={v.id} id={`vendor-${v.id}`} className={`scroll-mt-24 transition-all ${vendorFocusId === v.id ? "ring-2 ring-sky-400 bg-sky-500/5" : ""}`}>
                               <td className="p-3 font-semibold text-slate-200">{v.name}</td>
                               <td className="p-3 text-slate-300">{v.service_type}</td>
                               <td className="p-3 text-slate-400">{v.data_processing_role || "—"}</td>
@@ -1990,10 +2293,21 @@ export default function AegisPlatform() {
                             <td className="p-3.5">
                               <div className="font-mono text-amber-400 text-[11px] font-bold">{r.risk_code}</div>
                               <div className="font-semibold text-slate-100">{r.title}</div>
+                              {r.system_id && (
+                                <button onClick={() => goToSystem(r.system_id)} className="text-[10px] text-sky-300 hover:text-sky-200 hover:underline mt-0.5">
+                                  {aiSystems.find((s: any) => s.id === r.system_id)?.name || "affected system"} ↗
+                                </button>
+                              )}
                             </td>
                             <td className="p-3.5 text-slate-300">{r.category}</td>
                             <td className="p-3.5">
-                              <div className="text-[11px] text-sky-300 font-mono">{r.mitre_atlas_technique || "ATLAS"}</div>
+                              {r.mitre_atlas_technique ? (
+                                <a href={`https://atlas.mitre.org/techniques/${String(r.mitre_atlas_technique).replace(/[^A-Za-z0-9.]/g, "")}`}
+                                  target="_blank" rel="noopener noreferrer"
+                                  className="text-[11px] text-sky-300 font-mono hover:text-sky-200 hover:underline inline-flex items-center gap-0.5">
+                                  {r.mitre_atlas_technique} <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              ) : <span className="text-[11px] text-slate-500 font-mono">ATLAS</span>}
                               <div className="text-[10px] text-slate-400">{r.owasp_category}</div>
                             </td>
                             <td className="p-3.5 font-semibold">
@@ -2011,6 +2325,99 @@ export default function AegisPlatform() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Findings */}
+                  <div className="p-5 rounded-xl glass-panel space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-sm font-bold text-slate-200">Findings <span className="text-slate-500 font-normal">· {findings.length}</span></h2>
+                      <button
+                        onClick={() => setNewFindingOpen(v => !v)}
+                        className="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-[11px]"
+                      >
+                        {newFindingOpen ? "Cancel" : "+ New Finding"}
+                      </button>
+                    </div>
+
+                    {newFindingOpen && (
+                      <div className="p-3 rounded-lg bg-black/40 border border-white/10 space-y-2">
+                        <input
+                          placeholder="Finding title *"
+                          value={newFindingForm.title}
+                          onChange={e => setNewFindingForm(f => ({ ...f, title: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 rounded bg-white/5 border border-white/10 text-[11px] text-slate-200"
+                        />
+                        <textarea
+                          placeholder="Description"
+                          value={newFindingForm.description}
+                          onChange={e => setNewFindingForm(f => ({ ...f, description: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 rounded bg-white/5 border border-white/10 text-[11px] text-slate-200 h-14"
+                        />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                          <select value={newFindingForm.severity} onChange={e => setNewFindingForm(f => ({ ...f, severity: e.target.value }))}
+                            className="px-2 py-1.5 rounded bg-white/5 border border-white/10 text-[11px] text-slate-200">
+                            {["Critical", "High", "Medium", "Low"].map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                          <select value={newFindingForm.source} onChange={e => setNewFindingForm(f => ({ ...f, source: e.target.value }))}
+                            className="px-2 py-1.5 rounded bg-white/5 border border-white/10 text-[11px] text-slate-200">
+                            {["Manual Review", "Assessment", "Red Team", "Vendor Assessment", "Runtime Violation", "Regulatory Change"].map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                          <select value={newFindingForm.control_id} onChange={e => setNewFindingForm(f => ({ ...f, control_id: e.target.value }))}
+                            className="px-2 py-1.5 rounded bg-white/5 border border-white/10 text-[11px] text-slate-200">
+                            <option value="">(no control)</option>
+                            {controls.map((c: any) => <option key={c.id || c.code} value={c.code || c.id}>{c.code || c.id}</option>)}
+                          </select>
+                          <select value={newFindingForm.system_id} onChange={e => setNewFindingForm(f => ({ ...f, system_id: e.target.value }))}
+                            className="px-2 py-1.5 rounded bg-white/5 border border-white/10 text-[11px] text-slate-200">
+                            <option value="">(no system)</option>
+                            {aiSystems.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          </select>
+                        </div>
+                        <button onClick={submitNewFinding} disabled={findingBusy || !newFindingForm.title.trim()}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-semibold text-[11px]">
+                          {findingBusy ? "Creating…" : "Create finding"}
+                        </button>
+                      </div>
+                    )}
+
+                    {findings.length === 0 && !newFindingOpen && (
+                      <p className="text-[11px] text-slate-500">No findings yet. Findings are raised here manually, and automatically when a control fails a test or evidence is rejected.</p>
+                    )}
+                    <div className="space-y-1.5">
+                      {findings.map((f: any) => (
+                        <div key={f.id} className="p-2.5 rounded-lg bg-black/40 border border-white/10 flex items-center gap-3 text-[11px]">
+                          <span className={`px-1.5 py-0.5 rounded border text-[9px] font-semibold ${
+                            f.severity === "Critical" ? "bg-rose-500/10 text-rose-300 border-rose-500/30"
+                            : f.severity === "High" ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                            : "bg-sky-500/10 text-sky-300 border-sky-500/30"}`}>{f.severity}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className={`font-semibold ${f.status === "Resolved" ? "line-through text-slate-500" : "text-slate-100"}`}>{f.title}</div>
+                            <div className="text-[10px] text-slate-500 flex items-center gap-1 flex-wrap">
+                              <span>{f.source}</span>
+                              <span>·</span>
+                              {f.control_id ? (
+                                <button onClick={() => goToControl(f.control_id)} className="text-indigo-300 hover:text-indigo-200 hover:underline font-mono">{f.control_id} ↗</button>
+                              ) : <span>no control</span>}
+                              <span>·</span>
+                              {f.system_id ? (
+                                <button onClick={() => goToSystem(f.system_id)} className="text-sky-300 hover:text-sky-200 hover:underline">{f.system_name || "system"} ↗</button>
+                              ) : <span>{f.system_name || "enterprise-wide"}</span>}
+                              <span>·</span>
+                              <span className="text-slate-400">{f.status}</span>
+                              {f.due_date ? <span>· due {new Date(f.due_date).toLocaleDateString()}</span> : null}
+                            </div>
+                          </div>
+                          {f.status !== "Resolved" && (
+                            <>
+                              <button onClick={() => addRemediationForFinding(f.id, f.title)}
+                                className="px-2 py-1 rounded bg-sky-500/20 text-sky-300 hover:bg-sky-500 hover:text-slate-950 text-[10px] font-semibold">+ Remediation</button>
+                              <button onClick={() => closeFinding(f.id)}
+                                className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 text-[10px] font-semibold">Resolve</button>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Remediation Tasks with Toggle */}
@@ -2078,9 +2485,13 @@ export default function AegisPlatform() {
 
                   <div className="p-6 rounded-2xl glass-panel space-y-4 font-mono text-xs">
                     <div className="border-b border-white/10 pb-3">
-                      <div className="text-slate-400">AEGIS-AI-COMPLIANCE-REPORT-2026</div>
-                      <div className="text-base font-bold text-white mt-1">ACME FINANCIAL SERVICES — AI GOVERNANCE BASELINE</div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">Authoritative Verification: 17 Frameworks • Multi-Tenant Isolated</div>
+                      <div className="text-slate-400">AI-TRUST-COMPLIANCE-REPORT • {new Date().toISOString().slice(0, 10)}</div>
+                      <div className="text-base font-bold text-white mt-1">
+                        {(currentUser?.organization_name || "Your Organization").toUpperCase()} — AI GOVERNANCE BASELINE
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        {aiSystems.length} AI system{aiSystems.length === 1 ? "" : "s"} governed • Multi-tenant isolated • Generated from live tenant data
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center py-2">
@@ -2103,10 +2514,27 @@ export default function AegisPlatform() {
                     </div>
 
                     <div className="text-slate-300 space-y-2 text-[11px] leading-relaxed">
-                      <p>• <strong>EU AI Act Status</strong>: High-Risk systems (Loan Decision AI) require mandatory Article 9, 14, 15 conformity procedures. Prohibited screening gate operational with zero violations.</p>
-                      <p>• <strong>NIST AI RMF 1.0 Status</strong>: GOVERN and MAP functions fully operational across retail banking and credit underwriting operations.</p>
-                      <p>• <strong>OWASP Agentic AI Status</strong>: Autonomous IT Support Agent equipped with least-privilege short-lived tokens and emergency kill-switches.</p>
+                      {(() => {
+                        const highRisk = aiSystems.filter((s: any) => String(s.risk_classification || "").includes("High"));
+                        const agentic = aiSystems.filter((s: any) => s.is_agentic_ai);
+                        const genai = aiSystems.filter((s: any) => s.is_generative_ai);
+                        const pii = aiSystems.filter((s: any) => s.processes_personal_data);
+                        const lines: string[] = [];
+                        if (aiSystems.length === 0) {
+                          lines.push("No AI systems registered yet. Register your AI systems to generate a substantive governance baseline.");
+                        } else {
+                          lines.push(`${highRisk.length} of ${aiSystems.length} registered system(s) are classified High-Risk${highRisk.length ? ` (${highRisk.slice(0, 3).map((s: any) => s.name).join(", ")})` : ""} and carry the full obligation set for their applicable frameworks.`);
+                          if (genai.length) lines.push(`${genai.length} generative-AI system(s) in scope for the OWASP LLM Top 10 and NIST GenAI Profile.`);
+                          if (agentic.length) lines.push(`${agentic.length} agentic system(s) in scope for OWASP Agentic and MITRE ATLAS — verify least-privilege tool permissions, human-approval gates and kill-switches in the Agents module.`);
+                          if (pii.length) lines.push(`${pii.length} system(s) process personal data — GDPR / India DPDP obligations apply; confirm DPAs and DPIAs.`);
+                          lines.push(`Overall readiness ${metrics?.overall_readiness_percentage ?? 0}% (implementation ${metrics?.implementation_score ?? 0}%, evidence ${metrics?.evidence_completeness_score ?? 0}%, effectiveness ${metrics?.control_effectiveness_score ?? 0}%). ${metrics?.open_findings_count ?? 0} open finding(s).`);
+                        }
+                        return lines.map((l, i) => <p key={i}>• {l}</p>);
+                      })()}
                     </div>
+                    <p className="text-[10px] text-slate-500 border-t border-white/10 pt-2">
+                      This summary is generated from your live tenant data. Use "Export Executive JSON / Report" above for the full machine-readable report with per-system detail and source citations.
+                    </p>
                   </div>
                 </div>
               )}
@@ -2297,6 +2725,35 @@ export default function AegisPlatform() {
                 <span className="font-bold">Legal Reasoning: </span>
                 <span>{selectedSystem.classification_reasoning}</span>
               </div>
+
+              {/* Cross-links to the rest of this system's governance graph */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {(() => {
+                  const m = registryModels.find((x: any) => x.name === selectedSystem.model_name || (x.provider === selectedSystem.model_provider && selectedSystem.model_name?.includes(x.name)));
+                  return m ? (
+                    <button onClick={() => { setSelectedSystem(null); goToModel(m.id); }} className="text-[10px] text-sky-300 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20 hover:border-sky-400">Model: {m.name} ↗</button>
+                  ) : null;
+                })()}
+                {(() => {
+                  const v = registryVendors.find((x: any) => x.name?.toLowerCase() === String(selectedSystem.model_provider || "").toLowerCase());
+                  return v ? (
+                    <button onClick={() => { setSelectedSystem(null); goToVendor(v.id); }} className="text-[10px] text-fuchsia-300 bg-fuchsia-500/10 px-2 py-0.5 rounded border border-fuchsia-500/20 hover:border-fuchsia-400">Vendor: {v.name} ↗</button>
+                  ) : null;
+                })()}
+                {registryAgents.filter((a: any) => a.system_id === selectedSystem.id).map((a: any) => (
+                  <button key={a.id} onClick={() => { setSelectedSystem(null); goToAgent(a.id); }} className="text-[10px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 hover:border-amber-400">Agent: {a.name} ↗</button>
+                ))}
+                {findings.filter((f: any) => f.system_id === selectedSystem.id).length > 0 && (
+                  <button onClick={() => { setSelectedSystem(null); setActiveTab("risks"); }} className="text-[10px] text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 hover:border-rose-400">
+                    {findings.filter((f: any) => f.system_id === selectedSystem.id).length} finding(s) ↗
+                  </button>
+                )}
+                {(selectedSystem.applicable_frameworks || []).map((fk: string) => (
+                  <button key={fk} onClick={() => { setSelectedSystem(null); goToFrameworkRequirement(fk); }} className="text-[10px] text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10 hover:border-sky-400">
+                    {(frameworks.find((f: any) => f.id === fk)?.short_name || fk)} ↗
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="pt-3 border-t border-white/10 flex justify-end">
@@ -2329,6 +2786,45 @@ export default function AegisPlatform() {
 
             <div className="space-y-3 text-xs">
               <p className="text-slate-300">{selectedControl.objective}</p>
+
+              {(() => {
+                const cw = crosswalk.find((c: any) => c.control_code === selectedControl.code || c.control_id === selectedControl.id);
+                const maps = cw?.mappings || [];
+                if (maps.length === 0) return null;
+                return (
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">Satisfies requirements in {maps.length} framework{maps.length === 1 ? "" : "s"}</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {maps.map((m: any, i: number) => (
+                        <button key={i}
+                          onClick={() => { setSelectedControl(null); goToFrameworkRequirement(m.framework_id, m.requirement_id || m.article); }}
+                          title={`${m.framework_name} ${m.article || m.requirement_id}${m.requirement_title ? " — " + m.requirement_title : ""} (${m.confidence})`}
+                          className="text-[10px] font-mono text-sky-300 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20 hover:border-sky-400">
+                          {m.framework_name}: {m.article || m.requirement_id} ↗
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {(() => {
+                const relatedEvidence = evidenceList.filter((ev: any) => (ev.satisfied_controls || []).includes(selectedControl.code));
+                if (relatedEvidence.length === 0) return null;
+                return (
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">Linked evidence ({relatedEvidence.length})</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {relatedEvidence.map((ev: any) => (
+                        <button key={ev.id} onClick={() => { setSelectedControl(null); setActiveTab("evidence"); }}
+                          className="text-[10px] text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20 hover:border-indigo-400">
+                          {ev.title} ↗
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Implementation Status</label>

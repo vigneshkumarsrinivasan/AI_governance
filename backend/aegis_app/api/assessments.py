@@ -253,6 +253,55 @@ async def assessment_approval(
         action=f"ASSESSMENT_{payload.decision.upper()}", object_type="Assessment", object_id=assessment.id,
         changes={"from": before, "to": assessment.approval_status, "notes": payload.notes},
     ))
+
+    # On approval: record decision provenance + an immutable governance snapshot
+    # (ADDITIONAL MOAT 5 + 6) so the approval remains reconstructable later.
+    if payload.decision == "approve":
+        import hashlib, json as _json
+        from aegis_app.models.models import (
+            GovernanceDecision, GovernanceSnapshot, AISystem as _AISys,
+            Evidence as _Ev, Finding as _Fnd,
+        )
+        det = (await db.execute(
+            select(Assessment).where(Assessment.id == assessment.id)
+            .options(selectinload(Assessment.responses))
+        )).scalars().first()
+        sysrow = (await db.execute(select(_AISys).where(_AISys.id == assessment.system_id))).scalars().first()
+        ev_ids = [e.id for e in (await db.execute(
+            select(_Ev).where(_Ev.tenant_id == current_user.tenant_id))).scalars().all()]
+        open_findings = [f.id for f in (await db.execute(
+            select(_Fnd).where(_Fnd.tenant_id == current_user.tenant_id,
+                               _Fnd.status.notin_(("Resolved", "Accepted Risk"))))).scalars().all()]
+        snap = {
+            "framework_id": assessment.framework_id,
+            "assessment_id": assessment.id,
+            "readiness_percentage": det.readiness_percentage if det else None,
+            "requirement_count": len(det.responses) if det else 0,
+            "answered": sum(1 for r in (det.responses if det else []) if r.status and r.status not in ("Unknown", "Not Started")),
+            "ai_system": {"id": sysrow.id, "name": sysrow.name, "model_version": sysrow.model_version,
+                          "lifecycle_status": sysrow.lifecycle_status, "risk_classification": sysrow.risk_classification} if sysrow else None,
+            "evidence_ids": ev_ids,
+            "open_findings_at_approval": open_findings,
+            "approved_by": current_user.full_name, "approved_by_role": current_user.role,
+            "approved_at": now.isoformat(),
+        }
+        payload_json = _json.dumps(snap, sort_keys=True, default=str)
+        db.add(GovernanceSnapshot(
+            tenant_id=current_user.tenant_id, kind="assessment_approval",
+            subject_type="assessment", subject_id=assessment.id, payload=snap,
+            content_hash=hashlib.sha256(payload_json.encode()).hexdigest(),
+            created_by=current_user.full_name,
+        ))
+        db.add(GovernanceDecision(
+            tenant_id=current_user.tenant_id, decision="Assessment approved",
+            subject_type="assessment", subject_id=assessment.id,
+            decided_by=current_user.full_name, decided_by_role=current_user.role,
+            rationale=payload.notes,
+            context={"framework": assessment.framework_id, "system_id": assessment.system_id,
+                     "readiness": det.readiness_percentage if det else None,
+                     "open_findings": len(open_findings), "evidence_count": len(ev_ids)},
+        ))
+
     await db.commit()
     return {
         "id": assessment.id, "approval_status": assessment.approval_status,

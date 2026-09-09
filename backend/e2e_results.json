@@ -1,0 +1,312 @@
+[
+ [
+  "signup returns token + simple mode",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "onboarding profile saved + completed",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "applicability returns exposures",
+  "PASS",
+  "code=200 n=19"
+ ],
+ [
+  "GDPR + India DPDP + EU AI Act flagged applicable",
+  "PASS",
+  "gdpr=DIRECTLY_APPLICABLE dpdp=DIRECTLY_APPLICABLE aia=DIRECTLY_APPLICABLE"
+ ],
+ [
+  "DORA is NOT blindly 'directly applicable' (fintech w/o licence)",
+  "PASS",
+  "dora=POTENTIALLY_APPLICABLE conf=LEGAL_REVIEW_REQUIRED"
+ ],
+ [
+  "every exposure has reasoning + source + regulation_type",
+  "PASS",
+  ""
+ ],
+ [
+  "credit-decision AI raises legal review",
+  "PASS",
+  "frameworks=['eu_ai_act', 'dora']"
+ ],
+ [
+  "register 'Loan Decision AI'",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "register 'Recruitment Screening AI'",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "register 'Customer Support GenAI'",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "register 'Fraud Detection ML'",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "register 'Internal Coding Copilot'",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "register 'Autonomous IT Support Agent'",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "register 'Connected AI Product'",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "intake 'Loan Decision AI'",
+  "PASS",
+  "code=200 class=High-Risk AI System (Annex III)"
+ ],
+ [
+  "intake 'Recruitment Screening AI'",
+  "PASS",
+  "code=200 class=High-Risk AI System (Annex III)"
+ ],
+ [
+  "intake 'Customer Support GenAI'",
+  "PASS",
+  "code=200 class=Specific Transparency Risk (Article 50)"
+ ],
+ [
+  "intake 'Internal Coding Copilot'",
+  "PASS",
+  "code=200 class=Minimal / No Specific Legal Risk"
+ ],
+ [
+  "intake 'Autonomous IT Support Agent'",
+  "PASS",
+  "code=200 class=Minimal / No Specific Legal Risk"
+ ],
+ [
+  "intake 'Connected AI Product'",
+  "PASS",
+  "code=200 class=Specific Transparency Risk (Article 50)"
+ ],
+ [
+  "Loan AI != Coding Copilot applicability",
+  "PASS",
+  "loan_risk=High Risk copilot_risk=Minimal Risk"
+ ],
+ [
+  "Loan AI classified high-risk / prohibited-review",
+  "PASS",
+  "loan=High Risk / High-Risk AI System (Annex III)"
+ ],
+ [
+  "Agent intake sets agent_security_required",
+  "PASS",
+  "val=True"
+ ],
+ [
+  "Coding Copilot is lower risk than Loan AI",
+  "PASS",
+  "copilot=Minimal Risk loan=High Risk"
+ ],
+ [
+  "register vendor OpenAI",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "register model credit-xgb",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "register autonomous agent w/ broad permissions",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "agent risk score computed > 0",
+  "PASS",
+  "score=78.0"
+ ],
+ [
+  "agent permission graph returns",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "create EU AI Act assessment",
+  "PASS",
+  "code=200 reqs=419 source=regulatory:2024/1689"
+ ],
+ [
+  "assessment pre-populated with requirements",
+  "PASS",
+  "responses=419"
+ ],
+ [
+  "assessment uses REAL regulatory requirements (419-ish, not ~10 demo)",
+  "PASS",
+  "req_count=419 source=regulatory:2024/1689"
+ ],
+ [
+  "submit assessment response (PUT)",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "assessment readiness recalculated after response",
+  "PASS",
+  "readiness=0.1"
+ ],
+ [
+  "create evidence record + map to control",
+  "PASS",
+  "code=200 "
+ ],
+ [
+  "evidence review endpoint reachable",
+  "PASS",
+  "code=200 {\"id\":\"e4134c05-c2e9-46a1-83ce-d705fa2c8d3f\",\"approval_status\":\"Accepted\",\"revie"
+ ],
+ [
+  "mark control implemented-but-ineffective",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "failed control auto-creates a finding (workflow)",
+  "PASS",
+  "findings_count=1 auto=1"
+ ],
+ [
+  "control recovery auto-resolves the finding",
+  "PASS",
+  "still_open=0"
+ ],
+ [
+  "POST /findings endpoint exists + works",
+  "PASS",
+  "code=201 "
+ ],
+ [
+  "POST /remediations endpoint exists + works",
+  "PASS",
+  "code=201 "
+ ],
+ [
+  "creating remediation moves finding to Remediating",
+  "PASS",
+  "status=Remediating"
+ ],
+ [
+  "completing all remediation tasks resolves finding",
+  "PASS",
+  "status=Resolved"
+ ],
+ [
+  "PUT /findings/{id} update/close works",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "rejected/insufficient evidence raises a finding",
+  "PASS",
+  "count=1"
+ ],
+ [
+  "create risk",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "authorized role can accept risk with justification",
+  "PASS",
+  "code=200 {\"id\":\"1dca26a5-4b8e-4317-8182-d166b3187f77\",\"status\":\"Accepted\",\"treatment\":\"Ac"
+ ],
+ [
+  "risk acceptance rejects empty justification",
+  "PASS",
+  "code=400"
+ ],
+ [
+  "executive report generates",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "dashboard metrics",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "dashboard readiness is a real number (not hardcoded)",
+  "PASS",
+  "readiness=100.0"
+ ],
+ [
+  "trust score reacts to data",
+  "PASS",
+  "score=21.6 has_data=True"
+ ],
+ [
+  "audit log has entries for this session's actions",
+  "PASS",
+  "events=30"
+ ],
+ [
+  "cross-tenant AI system read blocked",
+  "PASS",
+  "code=404"
+ ],
+ [
+  "cross-tenant assessment read blocked",
+  "PASS",
+  "code=404"
+ ],
+ [
+  "cross-tenant evidence download-token blocked",
+  "PASS",
+  "code=404"
+ ],
+ [
+  "other tenant sees its OWN empty profile",
+  "PASS",
+  "code=200 exists=False"
+ ],
+ [
+  "other tenant AI system list is empty (no leak)",
+  "PASS",
+  "count=0"
+ ],
+ [
+  "copilot answers: Which AI systems process personal data?",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "copilot answers: What should I work on today?",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "copilot answers: Which agent can execute code?",
+  "PASS",
+  "code=200"
+ ],
+ [
+  "copilot does not leak another tenant's data on injection",
+  "PASS",
+  "code=200"
+ ]
+]

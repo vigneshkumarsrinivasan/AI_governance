@@ -84,7 +84,14 @@ OBLIGATION_TYPES = (
 )
 
 MAPPING_TYPES = ("EXACT", "STRONG", "PARTIAL", "RELATED")
-MAPPING_STATES = ("AI_SUGGESTED", "REVIEW_REQUIRED", "APPROVED", "REJECTED")
+# AI-generated regulatory mappings must never auto-become authoritative
+# (ADDITIONAL MOAT 2 - mapping validation workflow).
+MAPPING_STATES = (
+    "AI_SUGGESTED", "DRAFT", "NEEDS_REVIEW", "REVIEW_REQUIRED",
+    "EXPERT_REVIEWED", "APPROVED", "REJECTED", "DEPRECATED",
+)
+# States a mapping must be in for it to count toward coverage.
+AUTHORITATIVE_MAPPING_STATES = ("EXPERT_REVIEWED", "APPROVED")
 
 TEMPORAL_STATES = (
     "CURRENTLY_APPLICABLE", "FUTURE_APPLICABLE", "TRANSITION_PERIOD",
@@ -367,6 +374,16 @@ class RequirementControlMapping(Base):
     reviewed_by = Column(String(255), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=_now)
+
+    # Provenance (ADDITIONAL MOAT 1 - regulatory provenance).
+    mapping_source = Column(String(32), default="ai_proposer")   # crosswalk_seed | ai_proposer | manual
+    mapping_version = Column(String(16), default="1.0")
+    effective_date = Column(String(32), nullable=True)
+    superseded_by_id = Column(String(36), nullable=True)
+    legal_review_status = Column(String(32), default="NOT_REVIEWED")  # NOT_REVIEWED | IN_REVIEW | CLEARED | FLAGGED
+    expert_reviewed_by = Column(String(255), nullable=True)
+    expert_reviewed_at = Column(DateTime, nullable=True)
+    last_reviewed_at = Column(DateTime, nullable=True)
 
     requirement = relationship("RegulatoryRequirement", back_populates="control_mappings")
 

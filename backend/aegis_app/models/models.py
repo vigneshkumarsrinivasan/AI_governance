@@ -637,6 +637,80 @@ class ApplicabilityDecision(Base):
     open_questions = Column(JSON, default=list)
 
 
+class ControlEffectivenessEvent(Base):
+    """Append-only history of a customer control's assurance state
+    (ADDITIONAL MOAT 4). Governance history is never overwritten - each
+    status/effectiveness change writes a new row."""
+    __tablename__ = "control_effectiveness_events"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id = Column(String(36), nullable=True)
+    control_code = Column(String(64), nullable=False, index=True)     # UC-AI-SEC-001
+    system_id = Column(String(36), nullable=True, index=True)         # null => organization-level
+    status = Column(String(50), nullable=False)                       # Not Started..Tested
+    effectiveness = Column(String(50), nullable=True)                 # Ineffective..Effective
+    lifecycle_state = Column(String(40), nullable=True)               # NOT_IMPLEMENTED..EXPIRED (MOAT 9)
+    note = Column(Text, nullable=True)
+    changed_by = Column(String(255), nullable=True)
+    changed_at = Column(DateTime, default=utc_now, index=True)
+
+
+class ComplianceInheritance(Base):
+    """A control that is satisfied once at a shared scope and reused by many AI
+    systems (ADDITIONAL MOAT 3 / MOAT 14). Inheritance is explicit and carries
+    applicability + freshness, not a blind copy."""
+    __tablename__ = "compliance_inheritance"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    control_code = Column(String(64), nullable=False, index=True)
+    source_scope = Column(String(32), nullable=False)   # organization | business_unit | vendor | infrastructure | shared_platform
+    source_ref = Column(String(255), nullable=True)     # e.g. "Corporate AI Policy", vendor id, "AWS eu-west-1"
+    applies_to_system_id = Column(String(36), nullable=True, index=True)  # null => every applicable AI system
+    applicability_note = Column(Text, nullable=True)
+    exceptions = Column(JSON, default=list)
+    verified_state = Column(String(32), default="ASSERTED")  # ASSERTED | VERIFIED | STALE
+    evidence_ids = Column(JSON, default=list)
+    created_by = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+    last_reviewed_at = Column(DateTime, nullable=True)
+
+
+class GovernanceDecision(Base):
+    """Provenance for a significant governance decision (ADDITIONAL MOAT 5).
+    Reconstructable later: who decided, with what evidence, at what versions."""
+    __tablename__ = "governance_decisions"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    decision = Column(String(120), nullable=False)      # "AI system approved", "Risk accepted", ...
+    subject_type = Column(String(48), nullable=False)   # ai_system | assessment | finding | exception
+    subject_id = Column(String(36), nullable=False, index=True)
+    decided_by = Column(String(255), nullable=True)
+    decided_by_role = Column(String(64), nullable=True)
+    rationale = Column(Text, nullable=True)
+    context = Column(JSON, default=dict)                # {system_version, model_version, risk_state, requirements[], evidence_ids[], exceptions[], approvals[]}
+    created_at = Column(DateTime, default=utc_now, index=True)
+
+
+class GovernanceSnapshot(Base):
+    """Immutable point-in-time record captured when an approval or report is
+    issued (ADDITIONAL MOAT 6). Later edits never alter historical approval
+    evidence - a new snapshot is created instead."""
+    __tablename__ = "governance_snapshots"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    kind = Column(String(48), nullable=False)           # assessment_approval | report | ai_system_approval
+    subject_type = Column(String(48), nullable=False)
+    subject_id = Column(String(36), nullable=False, index=True)
+    payload = Column(JSON, default=dict)                # framework versions, requirement/control/evidence versions, tests, findings, exceptions, approvers
+    content_hash = Column(String(64), nullable=True)
+    created_by = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=utc_now, index=True)
+
+
 class OrganizationMembership(Base):
     """
     A user's access to a company (tenant). One user can belong to several

@@ -295,6 +295,57 @@ export async function getRegulatoryRequirementDetail(requirementKey: string) {
   return request<any>(`/regulatory/requirements/${encodeURIComponent(requirementKey)}`);
 }
 
+// Unified Governance Knowledge Graph + compliance-inheritance coverage (MOAT 1/2/3)
+export async function getUnifiedControls() {
+  return request<{ controls: any[]; total: number }>("/unified-controls");
+}
+
+export async function getUnifiedControlDetail(code: string) {
+  return request<any>(`/unified-controls/${encodeURIComponent(code)}`);
+}
+
+export async function getUnifiedControlHistory(code: string) {
+  return request<any>(`/unified-controls/${encodeURIComponent(code)}/history`);
+}
+
+export async function setUnifiedControlStatus(code: string, payload: { status: string; effectiveness?: string; note?: string; owner?: string }) {
+  return request<any>(`/unified-controls/${encodeURIComponent(code)}/status`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function proposeControlMappings(frameworks?: string) {
+  const qs = frameworks ? `?frameworks=${encodeURIComponent(frameworks)}` : "";
+  return request<any>(`/unified-controls/admin/propose-mappings${qs}`, { method: "POST" });
+}
+
+export async function listControlMappings(params: { state?: string; control_code?: string; framework?: string; limit?: number } = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)])
+  ).toString();
+  return request<{ mappings: any[]; state_counts: Record<string, number> }>(`/control-mappings${qs ? `?${qs}` : ""}`);
+}
+
+export async function reviewControlMapping(id: string, payload: { decision: string; note?: string; legal_review_status?: string }) {
+  return request<any>(`/control-mappings/${id}/review`, { method: "PUT", body: JSON.stringify(payload) });
+}
+
+export async function getFrameworkCoverage(frameworkKey: string, params: { status?: string; q?: string; limit?: number } = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)])
+  ).toString();
+  return request<any>(`/coverage/framework/${encodeURIComponent(frameworkKey)}${qs ? `?${qs}` : ""}`);
+}
+
+export async function getCoverageSummary() {
+  return request<any>("/coverage/summary");
+}
+
+export async function getEvidenceReuse(evidenceId: string) {
+  return request<any>(`/evidence/${evidenceId}/reuse`);
+}
+
 // 4. Controls & Crosswalk
 export async function getControls() {
   return request<any[]>("/controls");

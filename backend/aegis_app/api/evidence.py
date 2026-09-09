@@ -307,3 +307,15 @@ async def review_evidence(
     await db.commit()
 
     return {"id": evidence.id, "approval_status": evidence.approval_status, "reviewed_by": evidence.reviewed_by}
+
+
+@router.get("/{evidence_id}/reuse")
+async def evidence_reuse(evidence_id: str, db: AsyncSession = Depends(get_db),
+                         current_user: User = Depends(get_current_user)):
+    """How far one evidence object reaches (MOAT 3): unified controls, reviewed
+    framework requirements, frameworks, and AI systems it currently supports."""
+    from aegis_app.services.coverage import evidence_reuse as _reuse
+    r = await _reuse(db, current_user.tenant_id, evidence_id)
+    if not r.get("found"):
+        raise HTTPException(status_code=404, detail="Evidence not found")
+    return r

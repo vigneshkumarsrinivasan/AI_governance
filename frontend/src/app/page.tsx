@@ -5,11 +5,12 @@ import {
   Shield, Brain, CheckCircle2, AlertTriangle, AlertCircle, FileText,
   Layers, Lock, Terminal, Activity, FileCheck, Sliders, RefreshCw,
   Search, ExternalLink, ChevronRight, Zap, Play, X, Download, MessageSquare,
-  Building, User, Cpu, AlertOctagon, HelpCircle, Check, Clock, Plus
+  Building, User, Cpu, AlertOctagon, HelpCircle, Check, Clock, Plus, Scale
 } from "lucide-react";
 import * as api from "@/lib/api";
 import SmeExperience from "@/components/sme/SmeExperience";
 import CompanySwitcher from "@/components/CompanySwitcher";
+import CoverageExplorer from "@/components/CoverageExplorer";
 
 export default function AegisPlatform() {
   const [authChecked, setAuthChecked] = useState<boolean>(false);
@@ -834,6 +835,7 @@ export default function AegisPlatform() {
           </div>
           {[
             { id: "assessments", label: "Assessments", icon: FileCheck, badge: assessmentsList.length },
+            { id: "coverage", label: "Framework Coverage", icon: Scale },
             { id: "frameworks", label: "Authoritative Frameworks", icon: FileCheck, badge: "17" },
             { id: "evidence", label: "Evidence Vault", icon: Lock, badge: evidenceList.length },
             { id: "security", label: "AI Security & Agents", icon: Terminal, badge: agents.length },
@@ -1855,13 +1857,23 @@ export default function AegisPlatform() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {frameworks.map(fw => (
+                    {frameworks.map(fw => {
+                      const reg = regFrameworks[regKeyFor(fw.id)];
+                      const reqCount = (reg?.requirement_count ?? fw.requirement_count) || 0;
+                      const notIngested = reg && reg.production_status === "NOT_INGESTED";
+                      const CROSS_REF: Record<string, string> = {
+                        nist_sp_800_161: "Supply-chain (C-SCRM) controls are covered by the SR control family in NIST SP 800-53 Rev 5, which is fully imported. A standalone 800-161 import is pending.",
+                        nist_sp_800_218a: "AI-model secure-development practices extend NIST SP 800-218 (SSDF), which is imported. A standalone 800-218A import is pending.",
+                      };
+                      return (
                       <button
                         key={fw.id}
                         type="button"
-                        onClick={() => { setOpenFramework(fw.id); setFrameworkHighlight(null); }}
-                        className={`p-4 rounded-xl glass-panel glass-panel-hover flex flex-col justify-between text-left transition-colors ${
-                          openFramework === fw.id ? "border-sky-500/50 ring-1 ring-sky-500/40" : "hover:border-sky-500/30"
+                        onClick={() => { if (!notIngested) { setOpenFramework(fw.id); setFrameworkHighlight(null); } }}
+                        className={`p-4 rounded-xl glass-panel flex flex-col justify-between text-left transition-colors ${
+                          notIngested ? "opacity-70 cursor-default"
+                          : openFramework === fw.id ? "glass-panel-hover border-sky-500/50 ring-1 ring-sky-500/40"
+                          : "glass-panel-hover hover:border-sky-500/30"
                         }`}
                       >
                         <div>
@@ -1871,22 +1883,31 @@ export default function AegisPlatform() {
                           </div>
                           <h2 className="font-bold text-slate-100 text-sm">{fw.name}</h2>
                           <div className="text-[11px] font-mono text-slate-400 mt-1">{fw.official_reference}</div>
-                          <p className="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed">{fw.description}</p>
+                          <p className="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed">
+                            {notIngested ? (CROSS_REF[regKeyFor(fw.id)] || fw.description) : fw.description}
+                          </p>
                         </div>
 
                         <div className="pt-4 mt-3 border-t border-white/5 flex items-center justify-between">
-                          <div className="text-[11px] text-emerald-400 font-medium">
-                            {(regFrameworks[regKeyFor(fw.id)]?.requirement_count ?? fw.requirement_count) || 0} requirements
-                            {regFrameworks[regKeyFor(fw.id)] && (
-                              <span className="text-slate-500 font-normal"> · {regFrameworks[regKeyFor(fw.id)].hierarchy_node_count} nodes</span>
-                            )}
-                          </div>
-                          <span className="text-xs text-sky-400 flex items-center gap-1">
-                            {openFramework === fw.id ? "Viewing" : "Browse requirements"} <ChevronRight className="w-3 h-3" />
-                          </span>
+                          {notIngested ? (
+                            <span className="text-[11px] text-amber-400 font-medium">Not yet imported</span>
+                          ) : (
+                            <div className="text-[11px] text-emerald-400 font-medium">
+                              {reqCount} requirements
+                              {reg && <span className="text-slate-500 font-normal"> · {reg.hierarchy_node_count} nodes</span>}
+                            </div>
+                          )}
+                          {notIngested ? (
+                            <span className="text-[11px] text-slate-500">See {regKeyFor(fw.id) === "nist_sp_800_161" ? "NIST SP 800-53" : "NIST SP 800-218"}</span>
+                          ) : (
+                            <span className="text-xs text-sky-400 flex items-center gap-1">
+                              {openFramework === fw.id ? "Viewing" : "Browse requirements"} <ChevronRight className="w-3 h-3" />
+                            </span>
+                          )}
                         </div>
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {Object.keys(regFrameworks).length > 0 && (
@@ -2021,6 +2042,17 @@ export default function AegisPlatform() {
                       })()}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* ============================================================ */}
+              {/* TAB: FRAMEWORK COVERAGE (MOAT 1/2/3)                        */}
+              {/* ============================================================ */}
+              {activeTab === "coverage" && (
+                <div className="animate-fadeIn">
+                  <CoverageExplorer
+                    canReview={["Tenant Admin", "AI Governance Lead", "Compliance Manager", "Auditor", "Super Admin"].includes(currentUser?.role || "")}
+                  />
                 </div>
               )}
 
